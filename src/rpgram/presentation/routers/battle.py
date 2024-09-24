@@ -10,10 +10,12 @@ from sse_starlette import EventSourceResponse
 
 from rpgram.app.battle import BattleRunner
 from rpgram.app.services.action import ActionInteractor
-from rpgram.app.sse import BattleStream
-from rpgram.domain.models.battle import Battle, World, BattleResult
-from rpgram.presentation.models.converter import convert_battle_to_dto
-from rpgram.presentation.models.pure_reality import BattleDTO
+from rpgram.domain.models.battle import Battle, World
+from rpgram.presentation.models.converter import (
+    convert_battle_to_dto,
+    convert_battle_to_field_dto,
+)
+from rpgram.presentation.models.pure_reality import BattleDTO, BattleFieldDTO
 
 battle_router = APIRouter(prefix="/battle")
 
@@ -24,9 +26,8 @@ async def start_battle(
     battle_runner: FromDishka[BattleRunner],
     battle: FromDishka[Battle],
     world: FromDishka[World],
-    sse_gen: FromDishka[BattleStream],
 ):
-    battle_runner(battle, world, sse_gen)
+    battle_runner(battle, world)
 
 
 @battle_router.get("")
@@ -65,3 +66,9 @@ async def act_in_battle(
     key: str, action_interactor: FromDishka[ActionInteractor], by_hero: bool
 ):
     action_interactor(key, by_hero)
+
+
+@battle_router.get("/client")
+@inject
+async def clients_battle(battle: FromDishka[Battle]) -> BattleFieldDTO:
+    return convert_battle_to_field_dto(battle)

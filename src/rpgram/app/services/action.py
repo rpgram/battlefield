@@ -1,5 +1,3 @@
-import itertools
-
 from rpgram.domain.models.battle import World, Battle, ComboNode
 
 
@@ -9,36 +7,25 @@ class ActionInteractor:
         self.battle = battle
         self.combo_root = combo_root
 
-    def __call__(self, key: str, by_hero: bool) -> list[str]:
+    def __call__(self, key: str, by_hero: bool):
         hero = self.battle.hero if by_hero else self.battle.opponent
-        combo_by = hero.previous if hero.previous else [self.combo_root]
-        combo = list(
-            itertools.chain(
-                *[hpc.propagate_combo(key, self.combo_root) for hpc in combo_by]
-            )
-        )
+        combo_by = hero.plays.previous if hero.plays.previous else self.combo_root
+        combo = combo_by.propagate_combo(key, self.combo_root)
         previous_combo = None
-        if len(combo) == 1:
-            node = combo[0]
-            if node.is_leaf:
-                if by_hero:
-                    self.world.move.hero.opponent_effect = node.effect.opponent_effect
-                    self.world.move.hero.opponent_health_delta = (
-                        node.effect.opponent_health_delta
-                    )
-                    self.battle.hero.previous = None
-                else:
-                    self.world.move.opponent.opponent_effect = (
-                        node.effect.opponent_effect
-                    )
-                    self.world.move.opponent.opponent_health_delta = (
-                        node.effect.opponent_health_delta
-                    )
-                    self.battle.opponent.previous = None
+        if combo.is_leaf:
+            if by_hero:
+                self.world.move.hero.opponent_effect = combo.action.opponent_effect
+                self.world.move.hero.opponent_health_delta = (
+                    combo.action.opponent_health_delta
+                )
             else:
-                previous_combo = combo
+                self.world.move.opponent.opponent_effect = combo.action.opponent_effect
+                self.world.move.opponent.opponent_health_delta = (
+                    combo.action.opponent_health_delta
+                )
         else:
             previous_combo = combo
         if by_hero:
-            self.battle.hero.previous = previous_combo
-        return [c.value for c in combo]
+            self.battle.hero.plays.previous = previous_combo
+        else:
+            self.battle.opponent.plays.previous = previous_combo

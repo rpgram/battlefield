@@ -9,20 +9,25 @@ COMBO_ROOT = ComboNode(
         ComboNode(
             "b",
             [
-                ComboNode("c", [ComboNode("b", [], prefix="bc")], prefix="b"),
+                ComboNode(
+                    "c",
+                    [ComboNode("b", [], prefix="bc", action=Action("sweep", -5, None))],
+                    prefix="b",
+                ),
                 ComboNode(
                     "a",
                     [],
                     prefix="b",
                     action=Action(
-                        "dot",
+                        "cripple",
                         4,
                         Effect(
+                            "dream",
                             [
                                 EffectTick(-3),
                                 EffectTick(-3),
                                 EffectTick(-3),
-                            ]
+                            ],
                         ),
                     ),
                 ),

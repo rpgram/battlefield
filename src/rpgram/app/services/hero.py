@@ -1,7 +1,13 @@
-from rpgram.domain.models.battle import Battle, HeroState
+from rpgram.domain.models.battle import Battle, HeroState, PlayInfo, PlayerState
 
 
 class BattleService:
 
     def prepare_state(self):
-        return Battle(HeroState(100, []), HeroState(100, []))
+        return Battle(
+            PlayerState(HeroState(50, []), PlayInfo()),
+            PlayerState(
+                HeroState(30, []),
+                PlayInfo(),
+            ),
+        )

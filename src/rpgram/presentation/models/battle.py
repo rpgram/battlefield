@@ -44,7 +44,8 @@ class Move(Enum):
 class Suggestion:
     button: Move
     steps_left: int  # later will encounter casting
-    action: ActionName
+    # action: ActionName
+    action: str
 
 
 class PlayerState(Enum):

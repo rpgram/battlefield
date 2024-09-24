@@ -8,6 +8,7 @@ class EffectTick:
 
 @dataclass
 class Effect:
+    name: str
     ticks: list[EffectTick]
     # todo here are stacks also
 
@@ -37,48 +38,56 @@ class World:
     turn_time: int = 3
 
 
+@dataclass
+class Hint:
+    key: str
+    distance: int
+    action_name: str
+
+
 class ComboNode:
-    """Would be nice two rewrite this with some memorable format, but perf is perf"""
+    """todo Would be nice two rewrite combo with some memorable format, but perf is perf"""
 
     def __init__(
         self,
         value: str,
         children: list["ComboNode"],
         prefix: str = "",
+        distance: int = 0,
         action: Action | None = None,
     ):
-        self.children = children
+        self._distance = distance
+        self._children = children
         self.value = value
         self.combo = prefix + value
         self.action = action
+        self.hints = []
+        self._next_combos_with_distance(self._children)
 
-    def propagate_combo(self, call: str, root: "ComboNode") -> list["ComboNode"]:
-        next_combos = []
-        for c in self.children:
+    def propagate_combo(self, call: str, root: "ComboNode") -> "ComboNode":
+        for c in self._children:
             if c.value == call:
-                next_combos.append(c)
-        if next_combos:
-            return next_combos
-        for c in root.children:
+                return c
+        for c in root._children:
             if c.value == call:
-                next_combos.append(c)
-        if next_combos:
-            return next_combos
-        return root.children
+                return c
+        return root
 
     @property
     def is_leaf(self) -> bool:
-        if not self.children:
-            assert self.effect
+        if not self._children:
+            assert self.action is not None
             return True
         return False
 
-    @property
-    def effect(self) -> Action:
-        return self.action
-
-    @property
-    def next_combos_with_distance(self): ...
+    def _next_combos_with_distance(self, children: list["ComboNode"]):
+        for c in children:
+            if c.is_leaf:
+                self.hints.append(
+                    Hint(c.value, c._distance - self._distance, c.action.name)
+                )
+            else:
+                self._next_combos_with_distance(c._children)
 
 
 @dataclass
@@ -86,13 +95,24 @@ class HeroState:
     health: int
     effect_states: list[EffectState]
     # maybe better to move it to the world? or even to PureFabrication?
-    previous: list[ComboNode] | None = None
+
+
+@dataclass
+class PlayInfo:
+    previous: ComboNode | None = None
+
+
+@dataclass
+class PlayerState:
+    unit_state: HeroState
+    plays: PlayInfo
+    username: str = "TESTER"  # it will be id
 
 
 @dataclass
 class Battle:
-    hero: HeroState
-    opponent: HeroState
+    hero: PlayerState
+    opponent: PlayerState
 
     def __eq__(self, other: "Battle"):
         return asdict(self) == asdict(other)
