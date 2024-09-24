@@ -3,7 +3,9 @@ from rpgram.domain.models.battle import Action, Effect, EffectTick, ComboNode
 COMBO_ROOT = ComboNode(
     "",
     [
-        ComboNode("a", [ComboNode("a", [], prefix="a", action=Action(-3, None))]),
+        ComboNode(
+            "a", [ComboNode("a", [], prefix="a", action=Action("hit", -3, None))]
+        ),
         ComboNode(
             "b",
             [
@@ -13,6 +15,7 @@ COMBO_ROOT = ComboNode(
                     [],
                     prefix="b",
                     action=Action(
+                        "dot",
                         4,
                         Effect(
                             [

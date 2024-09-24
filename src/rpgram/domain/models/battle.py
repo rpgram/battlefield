@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 
 @dataclass
@@ -20,6 +20,7 @@ class EffectState:
 
 @dataclass
 class Action:
+    name: str
     opponent_health_delta: int
     opponent_effect: Effect | None
 
@@ -33,7 +34,7 @@ class Move:
 @dataclass
 class World:
     move: Move
-    turn_time: int = 1
+    turn_time: int = 3
 
 
 class ComboNode:
@@ -76,6 +77,9 @@ class ComboNode:
     def effect(self) -> Action:
         return self.action
 
+    @property
+    def next_combos_with_distance(self): ...
+
 
 @dataclass
 class HeroState:
@@ -89,6 +93,9 @@ class HeroState:
 class Battle:
     hero: HeroState
     opponent: HeroState
+
+    def __eq__(self, other: "Battle"):
+        return asdict(self) == asdict(other)
 
 
 @dataclass

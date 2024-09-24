@@ -1,9 +1,19 @@
+from typing import Generator
+
 from dishka import Provider, provide, Scope
 
 from rpgram.app.battle import BattleRunner
 from rpgram.app.services.action import ActionInteractor
+from rpgram.app.sse import battle_sse_generator, BattleStream
 from rpgram.domain.algos.trie import COMBO_ROOT
-from rpgram.domain.models.battle import Battle, World, HeroState, Move, Action
+from rpgram.domain.models.battle import (
+    Battle,
+    World,
+    HeroState,
+    Move,
+    Action,
+    BattleResult,
+)
 
 
 class InteractorsProvider(Provider):
@@ -21,7 +31,11 @@ class BattleProvider(Provider):
 
     @provide
     def battle(self) -> Battle:
-        return Battle(HeroState(50, []), HeroState(30, []))
+        return Battle(HeroState(50, []), HeroState(7, []))
+
+    @provide()
+    def battle_sse(self) -> BattleStream:
+        return battle_sse_generator()
 
     @provide
     def world(self) -> World:

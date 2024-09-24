@@ -1,9 +1,13 @@
+import asyncio
 from contextlib import asynccontextmanager
 
+import hypercorn
 import uvicorn
 from dishka import make_async_container
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
+from hypercorn import Config
+from hypercorn.asyncio import serve
 
 from rpgram.app.ioc import InteractorsProvider, BattleProvider
 from rpgram.presentation.routers.battle import battle_router
@@ -25,4 +29,6 @@ def create_app():
     return app
 
 
-uvicorn.run(create_app())
+# config = Config()
+# config.bind = ["localhost:8080"]
+# asyncio.run(serve(app=create_app(), config=config))
