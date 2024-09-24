@@ -9,6 +9,7 @@ class EffectTick:
 @dataclass
 class Effect:
     ticks: list[EffectTick]
+    # todo here are stacks also
 
 
 @dataclass
@@ -88,3 +89,9 @@ class HeroState:
 class Battle:
     hero: HeroState
     opponent: HeroState
+
+
+@dataclass
+class BattleResult:
+    hero_victory: bool
+    #  todo here is award also
