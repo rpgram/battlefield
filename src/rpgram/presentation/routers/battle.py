@@ -1,7 +1,7 @@
 import asyncio
 import copy
 from dataclasses import asdict
-from typing import Generator
+from typing import Generator, AsyncGenerator
 
 from dishka import FromDishka
 from dishka.integrations.fastapi import inject
@@ -26,7 +26,8 @@ async def start_battle(
     battle_runner: FromDishka[BattleRunner],
     battle: FromDishka[Battle],
     world: FromDishka[World],
-):
+) -> None:
+    # return initial instance creds
     battle_runner(battle, world)
 
 
@@ -41,14 +42,11 @@ async def get_battle(battle: FromDishka[Battle]) -> BattleDTO:
 async def get_battle_sse(
     battle: FromDishka[Battle],
     world: FromDishka[World],
-):
+) -> EventSourceResponse:
 
     last_sent = copy.deepcopy(battle)
 
-    async def stream(sleep_time: float):
-        # battle_updater = (
-        #     convert_battle_to_dto(e) if isinstance(e, Battle) else e for e in sse_gen
-        # )
+    async def stream(sleep_time: float) -> AsyncGenerator[BattleDTO, None]:
         yield convert_battle_to_dto(battle)
         while True:
             if battle != last_sent:
@@ -64,7 +62,8 @@ async def get_battle_sse(
 @inject
 async def act_in_battle(
     key: str, action_interactor: FromDishka[ActionInteractor], by_hero: bool
-):
+) -> None:
+    # todo return response
     action_interactor(key, by_hero)
 
 

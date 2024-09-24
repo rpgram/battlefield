@@ -9,7 +9,7 @@ from rpgram.domain.models.battle import (
 )
 
 
-def effects_tick(hero_state: HeroState):
+def effects_tick(hero_state: HeroState) -> None:
     for effect_state in hero_state.effect_states:
         hero_state.health += effect_state.effect.ticks[effect_state.tick].health_delta
         if len(effect_state.effect.ticks) - 1 > effect_state.tick:
@@ -41,7 +41,7 @@ def tick(battle_state: Battle, world: World) -> bool | None:
 async def start_battle_loop_until_victory(
     battle_state: Battle,
     world: World,
-):
+) -> None:
     while True:
         ts = time.time()
         finish = tick(battle_state, world)

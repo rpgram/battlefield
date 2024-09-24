@@ -59,7 +59,7 @@ class Player:
     username: str
     state: PlayerState
     health_points: int
-    effects: list
+    effects: list[str]
 
 
 @dataclass

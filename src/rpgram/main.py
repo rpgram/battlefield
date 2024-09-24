@@ -1,5 +1,6 @@
 import asyncio
 from contextlib import asynccontextmanager
+from typing import AsyncContextManager, AsyncIterator, Never, AsyncGenerator
 
 import hypercorn
 import uvicorn
@@ -15,13 +16,13 @@ from rpgram.presentation.routers.fakes import fake_router
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    yield
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    yield None
     await app.state.dishka_container.close()
 
 
-def create_app():
-    app = FastAPI()
+def create_app() -> FastAPI:
+    app = FastAPI(lifespan=lifespan)
     app.include_router(fake_router)
     app.include_router(battle_router)
     container = make_async_container(InteractorsProvider(), BattleProvider())

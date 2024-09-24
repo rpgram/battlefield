@@ -1,4 +1,4 @@
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, is_dataclass
 
 
 @dataclass
@@ -61,7 +61,7 @@ class ComboNode:
         self.value = value
         self.combo = prefix + value
         self.action = action
-        self.hints = []
+        self.hints: list[Hint] = []
         self._next_combos_with_distance(self._children)
 
     def propagate_combo(self, call: str, root: "ComboNode") -> "ComboNode":
@@ -80,9 +80,9 @@ class ComboNode:
             return True
         return False
 
-    def _next_combos_with_distance(self, children: list["ComboNode"]):
+    def _next_combos_with_distance(self, children: list["ComboNode"]) -> None:
         for c in children:
-            if c.is_leaf:
+            if c.is_leaf and c.action:
                 self.hints.append(
                     Hint(c.value, c._distance - self._distance, c.action.name)
                 )
@@ -114,8 +114,10 @@ class Battle:
     hero: PlayerState
     opponent: PlayerState
 
-    def __eq__(self, other: "Battle"):
-        return asdict(self) == asdict(other)
+    def __eq__(self, other: object) -> bool:
+        if is_dataclass(other) and not isinstance(other, type):
+            return asdict(self) == asdict(other)
+        return super().__eq__(other)
 
 
 @dataclass

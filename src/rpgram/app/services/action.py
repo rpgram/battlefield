@@ -7,12 +7,12 @@ class ActionInteractor:
         self.battle = battle
         self.combo_root = combo_root
 
-    def __call__(self, key: str, by_hero: bool):
+    def __call__(self, key: str, by_hero: bool) -> None:
         hero = self.battle.hero if by_hero else self.battle.opponent
         combo_by = hero.plays.previous if hero.plays.previous else self.combo_root
         combo = combo_by.propagate_combo(key, self.combo_root)
         previous_combo = None
-        if combo.is_leaf:
+        if combo.is_leaf and combo.action:
             if by_hero:
                 self.world.move.hero.opponent_effect = combo.action.opponent_effect
                 self.world.move.hero.opponent_health_delta = (

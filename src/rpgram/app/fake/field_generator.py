@@ -12,7 +12,7 @@ from rpgram.presentation.models.battle import (
 )
 
 
-def generate_random_string(length: int):
+def generate_random_string(length: int) -> str:
     return "".join(
         random.choice(string.ascii_lowercase) for _ in range(length)
     ).capitalize()
