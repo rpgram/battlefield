@@ -1,6 +1,6 @@
 from rpgram.domain.interfaces.memory_storage import IMemoryEntityStorage
-from rpgram.domain.models.battle import Battle
-from rpgram.domain.types import BattleId, PlayerId
+from rpgram.domain.models.battle import Battle, CreateBattle
+from rpgram.domain.utypes import BattleId, PlayerId
 from rpgram.presentation.models.battle import Side
 
 
@@ -22,16 +22,19 @@ class BattleStorage(IMemoryEntityStorage):
         if self._battle_id_counter == 2**32 - 1:
             self._reset_id()
             return
-        self._battle_id_counter += 1
+        self._battle_id_counter = BattleId(self._battle_id_counter + 1)
 
 
 class BattleRepository:
     def __init__(self, storage: BattleStorage):
         self._storage = storage
 
-    def add_battle(self, battle: Battle, player_id: PlayerId) -> BattleId:
+    def add_battle(self, battle: CreateBattle, player_id: PlayerId) -> BattleId:
         battle_id = self._storage.generate_id
-        self._storage.battles[battle_id] = battle
+        to_insert = Battle(
+            hero=battle.hero, opponent=battle.opponent, battle_id=battle_id
+        )
+        self._storage.battles[battle_id] = to_insert
         self.connect_side(player_id, Side.LEFT, battle_id)
         return battle_id
 
@@ -40,13 +43,16 @@ class BattleRepository:
     ) -> None:
         self._storage.players_battle[player_id] = battle_id, side
 
-    def get_battle(self, param: PlayerId | BattleId) -> Battle | None:
-        if type(param) is BattleId:
-            return self._storage.battles.get(param)
-        battle_id = self._storage.players_battle.get(param)
-        if battle_id is None:
+    def get_battle(
+        self, player_id: PlayerId | None = None, battle_id: BattleId | None = None
+    ) -> Battle | None:
+        assert battle_id or player_id
+        if battle_id:
+            return self._storage.battles.get(battle_id)
+        player_position = self._storage.players_battle.get(player_id)
+        if player_position is None:
             return None
-        return self._storage.battles.get(battle_id[0])
+        return self._storage.battles.get(player_position[0])
 
     def remove_battle(self, battle_id: BattleId) -> None:
         pb = self._storage.players_battle

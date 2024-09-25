@@ -2,11 +2,18 @@ import asyncio
 
 from rpgram.app.sse import Streamer
 from rpgram.domain.algos.loop import start_battle_loop_until_victory
-from rpgram.domain.data.battle import BattleRepository
-from rpgram.domain.data.player import PlayerRepo
+from rpgram.data.battle import BattleRepository
+from rpgram.data.player import PlayerRepo
 from rpgram.domain.errors import AlreadyInBattle, NoPlayer, NoBattle
-from rpgram.domain.models.battle import PlayerState, Battle, HeroState, PlayInfo, World
-from rpgram.domain.types import PlayerId, BattleId
+from rpgram.domain.models.battle import (
+    PlayerState,
+    Battle,
+    HeroState,
+    PlayInfo,
+    World,
+    CreateBattle,
+)
+from rpgram.domain.utypes import PlayerId, BattleId
 from rpgram.presentation.models.battle import Side
 
 
@@ -23,6 +30,12 @@ class BattleService:
         self.battle_repo = battle_repo
         self.streamer = streamer
 
+    def get_battle(self, player_id: PlayerId) -> Battle:
+        battle = self.battle_repo.get_battle(player_id)
+        if battle is None:
+            raise NoBattle(player_id=player_id)
+        return battle
+
     def start_battle(
         self, player_id: PlayerId, opponent_id: PlayerId | None
     ) -> BattleId:
@@ -37,24 +50,31 @@ class BattleService:
             opponent = self.player_repo.get_player(opponent_id)
             if opponent is None:
                 raise NoPlayer(player_id)
-        else:
-            opponent = None
-        if opponent is None:
-            opponent_state = None
-        else:
             opponent_state = PlayerState(
-                HeroState(opponent.hero.health, []), PlayInfo(player.hero.combo_tree), opponent_id
+                HeroState(opponent.hero.health, []),
+                PlayInfo(player.hero.combo_tree),
+                opponent_id,
             )
-        battle = Battle(
+        else:
+            opponent_state = None
+
+        battle = CreateBattle(
             PlayerState(
-                HeroState(player.hero.health, []), PlayInfo(player.hero.combo_tree), player_id
+                HeroState(player.hero.health, []),
+                PlayInfo(player.hero.combo_tree),
+                player_id,
             ),
             opponent_state,
         )
         battle_id = self.battle_repo.add_battle(battle, player_id)
         if opponent_state is not None:
+            running_battle = self.battle_repo.get_battle(battle_id=battle_id)
+            if running_battle is None:
+                raise NoBattle(battle_id)
             asyncio.create_task(
-                start_battle_loop_until_victory(battle, self.world, self.streamer)
+                start_battle_loop_until_victory(
+                    running_battle, self.world, self.streamer
+                )
             )
         return battle_id
 
@@ -62,11 +82,13 @@ class BattleService:
         opponent = self.player_repo.get_player(opponent_id)
         if opponent is None:
             raise NoPlayer(opponent_id)
-        battle = self.battle_repo.get_battle(battle_id)
+        battle = self.battle_repo.get_battle(battle_id=battle_id)
         if battle is None:
             raise NoBattle(battle_id)
         player_state = PlayerState(
-            HeroState(opponent.hero.health, []), PlayInfo(opponent.hero.combo_tree)
+            HeroState(opponent.hero.health, []),
+            PlayInfo(opponent.hero.combo_tree),
+            opponent_id,
         )
         battle.opponent = player_state
         self.battle_repo.connect_side(opponent_id, Side.RIGHT, battle_id)

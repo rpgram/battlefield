@@ -1,6 +1,6 @@
 from typing import Any
 
-from rpgram.domain.types import PlayerId, BattleId
+from rpgram.domain.utypes import PlayerId, BattleId
 
 
 class AlreadyInBattle(Exception):

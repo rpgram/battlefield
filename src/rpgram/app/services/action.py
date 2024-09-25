@@ -9,6 +9,8 @@ class ActionInteractor:
 
     def __call__(self, key: str, by_hero: bool) -> None:
         hero = self.battle.hero if by_hero else self.battle.opponent
+        if hero is None:
+            return
         combo_by = hero.plays.previous if hero.plays.previous else self.combo_root
         combo = combo_by.propagate_combo(key, self.combo_root)
         previous_combo = None

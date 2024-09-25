@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from rpgram.domain.models.battle import ComboNode
-from rpgram.domain.types import PlayerId
+from rpgram.domain.utypes import PlayerId
 
 
 @dataclass

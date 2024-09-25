@@ -3,7 +3,7 @@ from typing import Any
 
 from rpgram.domain.interfaces.memory_storage import IMemoryEntityStorage
 from rpgram.domain.player import Player, Hero
-from rpgram.domain.types import PlayerId
+from rpgram.domain.utypes import PlayerId
 
 
 class PlayerStorage(IMemoryEntityStorage):

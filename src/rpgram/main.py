@@ -5,7 +5,7 @@ from dishka import make_async_container
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 
-from rpgram.app.ioc import InteractorsProvider, BattleProvider
+from rpgram.app.ioc import BattleProvider
 from rpgram.presentation.routers.battle import battle_router
 from rpgram.presentation.routers.fakes import fake_router
 
@@ -20,6 +20,6 @@ def create_app() -> FastAPI:
     app = FastAPI(lifespan=lifespan)
     app.include_router(fake_router)
     app.include_router(battle_router)
-    container = make_async_container(InteractorsProvider(), BattleProvider())
+    container = make_async_container(BattleProvider())
     setup_dishka(container, app)
     return app

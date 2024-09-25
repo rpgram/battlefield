@@ -1,6 +1,6 @@
 from dataclasses import dataclass, asdict, is_dataclass
 
-from rpgram.domain.types import BattleId, PlayerId
+from rpgram.domain.utypes import BattleId, PlayerId
 
 
 @dataclass
@@ -113,17 +113,28 @@ class PlayerState:
     # username: str = "TESTER"  # it will be id
 
 
-
 @dataclass
-class Battle:
+class CreateBattle:
     hero: PlayerState
     opponent: PlayerState | None
-    battle_id: BattleId | None = None
+
+
+
+
+@dataclass
+class Battle(CreateBattle):
+    battle_id: BattleId
 
     def __eq__(self, other: object) -> bool:
         if is_dataclass(other) and not isinstance(other, type):
             return asdict(self) == asdict(other)
         return super().__eq__(other)
+
+
+
+@dataclass
+class RunningBattle(Battle):
+    opponent: PlayerState
 
 
 @dataclass

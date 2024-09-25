@@ -2,11 +2,11 @@ import asyncio
 import collections
 from asyncio import QueueFull
 from contextlib import suppress
+from typing import Generic
 
-from rpgram.domain.data.battle import BattleRepository
+from rpgram.data.battle import BattleRepository
 from rpgram.domain.errors import NoBattle
-from rpgram.domain.models.battle import Battle
-from rpgram.domain.types import PlayerId
+from rpgram.domain.utypes import PlayerId, SSEEvent
 
 
 class StreamerContext:
@@ -22,14 +22,14 @@ class StreamerContext:
         self.streamer.close_stream(self.player_id)
 
 
-class Streamer:
+class Streamer(Generic[SSEEvent]):
     def __init__(self, battle_repo: BattleRepository) -> None:
         self.battle_streams: dict[PlayerId, asyncio.Queue] = collections.defaultdict(
             asyncio.Queue
         )
         self.battle_repo = battle_repo
 
-    async def get_battle_state(self, player_id: PlayerId) -> Battle | None:
+    async def get_battle_state(self, player_id: PlayerId) -> SSEEvent | None:
         battle = self.battle_repo.get_battle(player_id)
         if battle is None:
             raise NoBattle(player_id=player_id)
@@ -38,9 +38,9 @@ class Streamer:
             return None
         return await q.get()
 
-    def send_battle(self, player_id: PlayerId, battle: Battle):
+    def send_battle(self, player_id: PlayerId, event: SSEEvent):
         with suppress(QueueFull):
-            self.battle_streams[player_id].put_nowait(battle)
+            self.battle_streams[player_id].put_nowait(event)
 
     def streamer_context(self, player_id: PlayerId) -> StreamerContext:
         return StreamerContext(player_id, self)
