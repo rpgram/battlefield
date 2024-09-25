@@ -113,15 +113,12 @@ class PlayerState:
     # username: str = "TESTER"  # it will be id
 
 
-class CreateBattle:
-    hero: PlayerState
-
 
 @dataclass
 class Battle:
-    battle_id: BattleId
     hero: PlayerState
     opponent: PlayerState | None
+    battle_id: BattleId | None = None
 
     def __eq__(self, other: object) -> bool:
         if is_dataclass(other) and not isinstance(other, type):
