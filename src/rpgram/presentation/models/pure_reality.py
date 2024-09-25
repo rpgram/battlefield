@@ -37,7 +37,7 @@ class BattleFieldDTO:
     """Already done client conversions"""
 
     player: PlayerDTO
-    opponent: PlayerDTO
+    opponent: PlayerDTO | None
     next_move: list[battle.Suggestion]
     complete_actions: list[battle.BattleEvent]
     moves: list[battle.Move]

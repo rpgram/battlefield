@@ -1,5 +1,7 @@
 from dataclasses import dataclass, asdict, is_dataclass
 
+from rpgram.domain.types import BattleId, PlayerId
+
 
 @dataclass
 class EffectTick:
@@ -93,12 +95,13 @@ class ComboNode:
 @dataclass
 class HeroState:
     health: int
-    effect_states: list[EffectState]
+    effect_states: list[EffectState]  # later will be setup as buffs are before!
     # maybe better to move it to the world? or even to PureFabrication?
 
 
 @dataclass
 class PlayInfo:
+    combo_tree: ComboNode
     previous: ComboNode | None = None
 
 
@@ -106,13 +109,19 @@ class PlayInfo:
 class PlayerState:
     unit_state: HeroState
     plays: PlayInfo
-    username: str = "TESTER"  # it will be id
+    player_id: PlayerId
+    # username: str = "TESTER"  # it will be id
+
+
+class CreateBattle:
+    hero: PlayerState
 
 
 @dataclass
 class Battle:
+    battle_id: BattleId
     hero: PlayerState
-    opponent: PlayerState
+    opponent: PlayerState | None
 
     def __eq__(self, other: object) -> bool:
         if is_dataclass(other) and not isinstance(other, type):

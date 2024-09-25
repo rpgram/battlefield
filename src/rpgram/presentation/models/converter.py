@@ -60,7 +60,11 @@ def convert_battle_to_field_dto(
 ) -> BattleFieldDTO:
     return BattleFieldDTO(
         player=convert_hero_state_to_dto(battle_state.hero.unit_state),
-        opponent=convert_hero_state_to_dto(battle_state.opponent.unit_state),
+        opponent=(
+            convert_hero_state_to_dto(battle_state.opponent.unit_state)
+            if battle_state.opponent
+            else None
+        ),
         next_move=get_players_hints(battle_state.hero),
         complete_actions=[],
         moves=[battle.Move(3), battle.Move(2), battle.Move(1)],

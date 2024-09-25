@@ -1,6 +1,9 @@
 import time
-from asyncio import sleep
+from asyncio import sleep, QueueFull
+from contextlib import suppress
 
+from rpgram.app.sse import Streamer
+from rpgram.domain.data.battle import BattleRepository
 from rpgram.domain.models.battle import (
     Battle,
     World,
@@ -41,10 +44,16 @@ def tick(battle_state: Battle, world: World) -> bool | None:
 async def start_battle_loop_until_victory(
     battle_state: Battle,
     world: World,
+    streamer: Streamer,
+    npc: bool = False,
 ) -> None:
     while True:
         ts = time.time()
         finish = tick(battle_state, world)
+        if battle_state.hero.player_id in streamer.battle_streams:
+            streamer.send_battle(battle_state.hero.player_id, battle_state)
+        if npc is False and battle_state.opponent and battle_state.opponent.player_id in streamer.battle_streams:
+            streamer.send_battle(battle_state.opponent.player_id, battle_state)
         # todo make victories
         if isinstance(finish, bool):
             break

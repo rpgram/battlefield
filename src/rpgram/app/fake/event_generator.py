@@ -13,7 +13,16 @@ def generate_events(from_id: int) -> list[BattleEvent]:
 def make_random_event(from_id: int) -> BattleEvent:
     side = random.choice([Side.LEFT, Side.RIGHT])
     action = random.choice(
-        [a.value for a in [Action.CROSS, Action.CIRCLE, Action.TRIANGLE, Action.SQUARE, Combo.HIT]]
+        [
+            a.value
+            for a in [
+                Action.CROSS,
+                Action.CIRCLE,
+                Action.TRIANGLE,
+                Action.SQUARE,
+                Combo.HIT,
+            ]
+        ]
     )
     return BattleEvent(
         eid=from_id if isinstance(action, Combo) else from_id + 1,
