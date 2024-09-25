@@ -7,7 +7,8 @@ from rpgram.domain.models.battle import (
     World,
     EffectState,
     HeroState,
-    BattleResult, RunningBattle,
+    BattleResult,
+    RunningBattle,
 )
 
 
@@ -58,10 +59,7 @@ async def start_battle_loop_until_victory(
             event = battle_state
         if battle_state.hero.player_id in streamer.battle_streams:
             streamer.send_battle(battle_state.hero.player_id, event)
-        if (
-            npc is False
-            and battle_state.opponent.player_id in streamer.battle_streams
-        ):
+        if npc is False and battle_state.opponent.player_id in streamer.battle_streams:
             streamer.send_battle(battle_state.opponent.player_id, event)
         # todo make victories
 

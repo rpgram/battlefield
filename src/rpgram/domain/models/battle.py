@@ -119,8 +119,6 @@ class CreateBattle:
     opponent: PlayerState | None
 
 
-
-
 @dataclass
 class Battle(CreateBattle):
     battle_id: BattleId
@@ -129,7 +127,6 @@ class Battle(CreateBattle):
         if is_dataclass(other) and not isinstance(other, type):
             return asdict(self) == asdict(other)
         return super().__eq__(other)
-
 
 
 @dataclass

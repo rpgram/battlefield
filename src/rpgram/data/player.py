@@ -18,7 +18,7 @@ class PlayerStorage(IMemoryEntityStorage):
         if self._id == 2**16 - 1:
             self._reset_id()
             return None
-        self._id += 1
+        self._id = PlayerId(self._id + 1)
 
     def generate_id(self) -> PlayerId:
         self._next_id()

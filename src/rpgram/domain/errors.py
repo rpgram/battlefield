@@ -12,7 +12,7 @@ class AlreadyInBattle(Exception):
 
 
 class NoPlayer(Exception):
-    def __init__(self, param: Any) -> None:
+    def __init__(self, param: Any = "nothing") -> None:
         self.param = param
 
     def __str__(self):

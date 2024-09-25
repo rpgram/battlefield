@@ -1,16 +1,14 @@
-from rpgram.domain.models.battle import World, Battle, ComboNode
+from rpgram.domain.models.battle import World, ComboNode, RunningBattle
 
 
 class ActionInteractor:
-    def __init__(self, combo_root: ComboNode, world: World, battle: Battle):
+    def __init__(self, combo_root: ComboNode, world: World, battle: RunningBattle):
         self.world = world
         self.battle = battle
         self.combo_root = combo_root
 
     def __call__(self, key: str, by_hero: bool) -> None:
         hero = self.battle.hero if by_hero else self.battle.opponent
-        if hero is None:
-            return
         combo_by = hero.plays.previous if hero.plays.previous else self.combo_root
         combo = combo_by.propagate_combo(key, self.combo_root)
         previous_combo = None

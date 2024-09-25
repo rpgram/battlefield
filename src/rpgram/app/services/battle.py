@@ -1,5 +1,6 @@
 import asyncio
 
+from rpgram.app.converters import battle_to_run
 from rpgram.app.sse import Streamer
 from rpgram.domain.algos.loop import start_battle_loop_until_victory
 from rpgram.data.battle import BattleRepository
@@ -12,6 +13,7 @@ from rpgram.domain.models.battle import (
     PlayInfo,
     World,
     CreateBattle,
+    RunningBattle,
 )
 from rpgram.domain.utypes import PlayerId, BattleId
 from rpgram.presentation.models.battle import Side
@@ -71,14 +73,17 @@ class BattleService:
             running_battle = self.battle_repo.get_battle(battle_id=battle_id)
             if running_battle is None:
                 raise NoBattle(battle_id)
-            asyncio.create_task(
-                start_battle_loop_until_victory(
-                    running_battle, self.world, self.streamer
+            if isinstance(running_battle, RunningBattle):
+                asyncio.create_task(
+                    start_battle_loop_until_victory(
+                        running_battle, self.world, self.streamer
+                    )
                 )
-            )
         return battle_id
 
     def connect(self, opponent_id: PlayerId, battle_id: BattleId) -> None:
+        if self.battle_repo.get_battle(opponent_id):
+            raise AlreadyInBattle(opponent_id)
         opponent = self.player_repo.get_player(opponent_id)
         if opponent is None:
             raise NoPlayer(opponent_id)
@@ -92,12 +97,14 @@ class BattleService:
         )
         battle.opponent = player_state
         self.battle_repo.connect_side(opponent_id, Side.RIGHT, battle_id)
+        running_battle = battle_to_run(battle)
+        self.battle_repo.upgrade_battle(running_battle)
         asyncio.create_task(
-            start_battle_loop_until_victory(battle, self.world, self.streamer)
+            start_battle_loop_until_victory(running_battle, self.world, self.streamer)
         )
 
     def leave_battle(self, player_id: PlayerId) -> None:
         battle = self.battle_repo.get_battle(player_id)
         if battle is None:
-            return
+            raise NoBattle(player_id=player_id)
         self.battle_repo.remove_battle(battle.battle_id)

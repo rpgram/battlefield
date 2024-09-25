@@ -1,12 +1,14 @@
+from rpgram.domain.errors import NoBattle
 from rpgram.domain.interfaces.memory_storage import IMemoryEntityStorage
-from rpgram.domain.models.battle import Battle, CreateBattle
+from rpgram.domain.models.battle import Battle, CreateBattle, RunningBattle
 from rpgram.domain.utypes import BattleId, PlayerId
 from rpgram.presentation.models.battle import Side
 
 
 class BattleStorage(IMemoryEntityStorage):
     def __init__(self) -> None:
-        self.battles: dict[BattleId, Battle] = {}
+        # todo separate this types storages?
+        self.battles: dict[BattleId, Battle | RunningBattle] = {}
         self.players_battle: dict[PlayerId, tuple[BattleId, Side]] = {}
         self._reset_id()
 
@@ -26,14 +28,23 @@ class BattleStorage(IMemoryEntityStorage):
 
 
 class BattleRepository:
-    def __init__(self, storage: BattleStorage):
+    def __init__(self, storage: BattleStorage) -> None:
         self._storage = storage
+
+    def upgrade_battle(self, battle: RunningBattle) -> None:
+        previous = self.get_battle(battle_id=battle.battle_id)
+        if previous is None:
+            raise NoBattle(battle.battle_id)
+        self._storage.battles[battle.battle_id] = battle
 
     def add_battle(self, battle: CreateBattle, player_id: PlayerId) -> BattleId:
         battle_id = self._storage.generate_id
-        to_insert = Battle(
-            hero=battle.hero, opponent=battle.opponent, battle_id=battle_id
-        )
+        if battle.opponent is None:
+            to_insert = Battle(hero=battle.hero, opponent=None, battle_id=battle_id)
+        else:
+            to_insert = RunningBattle(
+                hero=battle.hero, opponent=battle.opponent, battle_id=battle_id
+            )
         self._storage.battles[battle_id] = to_insert
         self.connect_side(player_id, Side.LEFT, battle_id)
         return battle_id
@@ -45,10 +56,11 @@ class BattleRepository:
 
     def get_battle(
         self, player_id: PlayerId | None = None, battle_id: BattleId | None = None
-    ) -> Battle | None:
-        assert battle_id or player_id
+    ) -> Battle | RunningBattle | None:
         if battle_id:
             return self._storage.battles.get(battle_id)
+        if player_id is None:
+            return None
         player_position = self._storage.players_battle.get(player_id)
         if player_position is None:
             return None
