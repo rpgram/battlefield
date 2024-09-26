@@ -1,12 +1,18 @@
 from contextlib import suppress
 from typing import Any
 
-from rpgram.domain.interfaces.memory_storage import IMemoryEntityStorage
+from rpgram.domain.algos.trie import COMBO_ROOT
+from rpgram.domain.interfaces.memory_storage import IMemoryEntityStorage, IPlayerStorage
 from rpgram.domain.player import Player, Hero
 from rpgram.domain.utypes import PlayerId
 
 
-class PlayerStorage(IMemoryEntityStorage):
+
+class InMemoryPlayers(IMemoryEntityStorage, IPlayerStorage):
+    pass
+
+
+class PlayerStorage(InMemoryPlayers):
     def __init__(self) -> None:
         self.players: list[Player] = []
         self._reset_id()
@@ -25,9 +31,26 @@ class PlayerStorage(IMemoryEntityStorage):
         return self._id
 
 
+class FakeStorage(InMemoryPlayers):
+    def __init__(self) -> None:
+        self.players: list[Player] = [
+            Player(PlayerId(1), "USIX", Hero(50, COMBO_ROOT)),
+            Player(PlayerId(2), "Gentle", Hero(50, COMBO_ROOT))
+        ]
+
+    def generate_id(self) -> Any:
+        pass
+
+    def _next_id(self) -> None:
+        pass
+
+    def _reset_id(self) -> None:
+        pass
+
+
 class PlayerRepo:
 
-    def __init__(self, storage: PlayerStorage) -> None:
+    def __init__(self, storage: InMemoryPlayers) -> None:
         self._storage = storage
 
     def add_player(self, username: str, hero: Hero) -> PlayerId:

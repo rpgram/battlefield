@@ -1,4 +1,5 @@
 from dataclasses import dataclass, asdict, is_dataclass
+from typing import TypeVar
 
 from rpgram.domain.utypes import BattleId, PlayerId
 
@@ -138,3 +139,6 @@ class RunningBattle(Battle):
 class BattleResult:
     hero_victory: bool
     #  todo here is award also
+
+
+SSEEvent = TypeVar("SSEEvent", RunningBattle, BattleResult)

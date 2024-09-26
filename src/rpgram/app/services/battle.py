@@ -24,13 +24,11 @@ class BattleService:
         self,
         battle_repo: BattleRepository,
         player_repo: PlayerRepo,
-        streamer: Streamer,
         world: World,
     ):
         self.world = world
         self.player_repo = player_repo
         self.battle_repo = battle_repo
-        self.streamer = streamer
 
     def get_battle(self, player_id: PlayerId) -> Battle:
         battle = self.battle_repo.get_battle(player_id)
@@ -39,7 +37,7 @@ class BattleService:
         return battle
 
     def start_battle(
-        self, player_id: PlayerId, opponent_id: PlayerId | None
+        self, player_id: PlayerId, opponent_id: PlayerId | None, streamer: Streamer
     ) -> BattleId:
         if self.battle_repo.get_battle(player_id):
             raise AlreadyInBattle(player_id)
@@ -76,12 +74,12 @@ class BattleService:
             if isinstance(running_battle, RunningBattle):
                 asyncio.create_task(
                     start_battle_loop_until_victory(
-                        running_battle, self.world, self.streamer
+                        running_battle, self.world, streamer
                     )
                 )
         return battle_id
 
-    def connect(self, opponent_id: PlayerId, battle_id: BattleId) -> None:
+    def connect(self, opponent_id: PlayerId, battle_id: BattleId, streamer: Streamer) -> None:
         if self.battle_repo.get_battle(opponent_id):
             raise AlreadyInBattle(opponent_id)
         opponent = self.player_repo.get_player(opponent_id)
@@ -100,7 +98,7 @@ class BattleService:
         running_battle = battle_to_run(battle)
         self.battle_repo.upgrade_battle(running_battle)
         asyncio.create_task(
-            start_battle_loop_until_victory(running_battle, self.world, self.streamer)
+            start_battle_loop_until_victory(running_battle, self.world, streamer)
         )
 
     def leave_battle(self, player_id: PlayerId) -> None:

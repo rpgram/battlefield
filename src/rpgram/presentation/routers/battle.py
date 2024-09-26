@@ -10,13 +10,12 @@ from rpgram.app.services.action import ActionInteractor
 from rpgram.app.services.battle import BattleService
 from rpgram.app.sse import Streamer
 from rpgram.domain.errors import AlreadyInBattle, NoPlayer, NoBattle
-from rpgram.domain.models.battle import Battle
+from rpgram.domain.models.battle import RunningBattle, SSEEvent
 from rpgram.domain.utypes import PlayerId, BattleId
 from rpgram.presentation.models.converter import (
-    convert_battle_to_dto,
     convert_battle_to_field_dto,
 )
-from rpgram.presentation.models.pure_reality import BattleDTO, BattleFieldDTO
+from rpgram.presentation.models.pure_reality import BattleFieldDTO
 
 battle_router = APIRouter(prefix="/battle")
 
@@ -24,15 +23,13 @@ battle_router = APIRouter(prefix="/battle")
 @battle_router.post("")
 @inject
 async def start_battle(
-    # battle_runner: FromDishka[BattleRunner],
-    # battle: FromDishka[Battle],
-    # world: FromDishka[World],
     player_id: PlayerId,
     opponent_id: PlayerId,
+    streamer: FromDishka[Streamer[SSEEvent]],
     battle_service: FromDishka[BattleService],
 ) -> BattleId:
     try:
-        return battle_service.start_battle(player_id, opponent_id)
+        return battle_service.start_battle(player_id, opponent_id, streamer)
     except AlreadyInBattle as aib_exc:
         raise HTTPException(status.HTTP_409_CONFLICT, str(aib_exc))
     except NoPlayer as np_exc:
@@ -43,16 +40,16 @@ async def start_battle(
         )
 
 
-@battle_router.get("")
-@inject
-async def get_battle(
-    player_id: PlayerId, battle_service: FromDishka[BattleService]
-) -> BattleDTO:
-    try:
-        battle = battle_service.get_battle(player_id)
-    except NoBattle as nb_exc:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, str(nb_exc))
-    return convert_battle_to_dto(battle)
+# @battle_router.get("")
+# @inject
+# async def get_battle(
+#     player_id: PlayerId, battle_service: FromDishka[BattleService]
+# ) -> BattleDTO:
+#     try:
+#         battle = battle_service.get_battle(player_id)
+#     except NoBattle as nb_exc:
+#         raise HTTPException(status.HTTP_404_NOT_FOUND, str(nb_exc))
+#     return convert_battle_to_dto(battle)
 
 
 # @battle_router.get("/sse")
@@ -79,10 +76,13 @@ async def get_battle(
 @battle_router.post("/{key}")
 @inject
 async def act_in_battle(
-    key: str, action_interactor: FromDishka[ActionInteractor], by_hero: bool
+    key: str, player_id: PlayerId, action_interactor: FromDishka[ActionInteractor]
 ) -> None:
     # todo return response
-    action_interactor(key, by_hero)
+    try:
+        action_interactor(key, player_id)
+    except NoBattle:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No battle.")
 
 
 @battle_router.get("/client")
@@ -100,15 +100,18 @@ async def clients_battle(
 @battle_router.get("/client/sse")
 @inject
 async def get_battle_sse_client(
-    player_id: PlayerId, streamer: FromDishka[Streamer]
+    player_id: PlayerId, streamer: FromDishka[Streamer[SSEEvent]]
 ) -> EventSourceResponse:
     async def event_streamer():
         with streamer.streamer_context(player_id):
             while True:
-                event = await streamer.get_battle_state(player_id)
+                try:
+                    event = await streamer.get_battle_state(player_id)
+                except NoBattle:
+                    break
                 if event is None:
                     break
-                if isinstance(event, Battle):
+                if isinstance(event, RunningBattle):
                     yield {
                         "event": "state",
                         "data": asdict(convert_battle_to_field_dto(event)),

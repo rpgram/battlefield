@@ -6,7 +6,8 @@ from typing import Generic
 
 from rpgram.data.battle import BattleRepository
 from rpgram.domain.errors import NoBattle
-from rpgram.domain.utypes import PlayerId, SSEEvent
+from rpgram.domain.models.battle import SSEEvent
+from rpgram.domain.utypes import PlayerId
 
 
 class StreamerContext:
@@ -24,9 +25,7 @@ class StreamerContext:
 
 class Streamer(Generic[SSEEvent]):
     def __init__(self, battle_repo: BattleRepository) -> None:
-        self.battle_streams: dict[PlayerId, asyncio.Queue] = collections.defaultdict(
-            asyncio.Queue
-        )
+        self.battle_streams: dict[PlayerId, asyncio.Queue] = {}
         self.battle_repo = battle_repo
 
     async def get_battle_state(self, player_id: PlayerId) -> SSEEvent | None:

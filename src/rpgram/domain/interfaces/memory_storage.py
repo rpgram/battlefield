@@ -1,6 +1,13 @@
 import abc
 from typing import Protocol, Any
 
+from rpgram.domain.player import Player
+
+
+class IPlayerStorage:
+    """Dependency hint"""
+    players: list[Player]
+
 
 class IMemoryEntityStorage(Protocol):
 
