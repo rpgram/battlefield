@@ -39,16 +39,13 @@ class BattleService:
             raise NoBattle(player_id=player_id)
         return battle
 
-    def get_battle_and_check_result(
+    def check_battle_result(
         self, battle_id: BattleId, player_id: PlayerId
-    ) -> Battle | RunningBattle | BattleResult:
-        battle = self.battle_repo.get_battle(battle_id=battle_id)
-        if battle is None:
-            battle_result = self.battle_repo.get_battle_result(battle_id, player_id)
-            if battle_result:
-                return battle_result
-            raise NoBattle(battle_id)
-        return battle
+    ) -> BattleResult:
+        battle_result = self.battle_repo.get_battle_result(battle_id, player_id)
+        if battle_result:
+            return battle_result
+        raise NoBattle(battle_id)
 
     def start_battle(
         self, player_id: PlayerId, opponent_id: PlayerId | None, streamer: Streamer

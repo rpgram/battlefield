@@ -33,8 +33,8 @@ class PlayerStorage(InMemoryPlayers):
 class FakeStorage(InMemoryPlayers):
     def __init__(self) -> None:
         self.players: list[Player] = [
-            Player(PlayerId(1), "Usix", Hero(20, COMBO_ROOT)),
-            Player(PlayerId(2), "Gentle", Hero(20, COMBO_ROOT)),
+            Player(PlayerId(1), "Usix", Hero(10, COMBO_ROOT)),
+            Player(PlayerId(2), "Gentle", Hero(10, COMBO_ROOT)),
         ]
 
     def generate_id(self) -> Any:

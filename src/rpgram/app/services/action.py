@@ -15,7 +15,7 @@ class ActionInteractor:
     def __call__(self, key: str, player_id: PlayerId) -> None:
         battle = self.battle_repo.get_battle(player_id)
         if not isinstance(battle, RunningBattle):
-            raise NoBattle
+            raise NoBattle(player_id=player_id)
         by_hero = battle.hero.player_id == player_id
         hero = battle.hero if by_hero else battle.opponent
         combo_by = hero.plays.previous if hero.plays.previous else self.combo_root

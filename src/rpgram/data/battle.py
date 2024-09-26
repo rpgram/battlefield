@@ -78,10 +78,13 @@ class BattleRepository:
 
     def remove_battle(self, battle_id: BattleId) -> None:
         pb = self._storage.players_battle
+        keys_to_rm = set()
         for i in pb:
             if pb[i][0] == battle_id:
-                pb.pop(i)
-        self._storage.battles.pop(battle_id)
+                keys_to_rm.add(i)
+        for i in keys_to_rm:
+            pb.pop(i, None)
+        self._storage.battles.pop(battle_id, None)
 
     def set_battle_result(self, battle_id: BattleId, result: RelatedBattleResult):
         for_one_of = self._storage.battle_results.get(battle_id)

@@ -10,7 +10,7 @@ from rpgram.app.services.action import ActionInteractor
 from rpgram.app.services.battle import BattleService
 from rpgram.app.sse import Streamer
 from rpgram.domain.errors import AlreadyInBattle, NoPlayer, NoBattle
-from rpgram.domain.models.battle import RunningBattle, SSEEvent, BattleResult
+from rpgram.domain.models.battle import RunningBattle, SSEEvent, BattleResult, Battle
 from rpgram.domain.utypes import PlayerId, BattleId
 from rpgram.presentation.models.converter import (
     convert_battle_to_field_dto,
@@ -52,27 +52,6 @@ async def start_battle(
 #     return convert_battle_to_dto(battle)
 
 
-# @battle_router.get("/sse")
-# @inject
-# async def get_battle_sse(
-#     battle: FromDishka[Battle],
-#     world: FromDishka[World],
-# ) -> EventSourceResponse:
-#
-#     last_sent = copy.deepcopy(battle)
-#
-#     async def stream(sleep_time: float) -> AsyncGenerator[BattleDTO, None]:
-#         yield convert_battle_to_dto(battle)
-#         while True:
-#             if battle != last_sent:
-#                 yield convert_battle_to_dto(battle)
-#                 last_sent.hero = copy.deepcopy(battle.hero)
-#                 last_sent.opponent = copy.deepcopy(battle.opponent)
-#             await asyncio.sleep(sleep_time)
-#
-#     return EventSourceResponse(stream(world.turn_time))
-
-
 @battle_router.post("/{key}")
 @inject
 async def act_in_battle(
@@ -89,12 +68,24 @@ async def act_in_battle(
 @inject
 async def clients_battle(
     player_id: PlayerId, battle_service: FromDishka[BattleService]
-) -> BattleFieldDTO:
+) -> BattleFieldDTO | BattleResult:
     try:
         battle = battle_service.get_battle(player_id)
     except NoBattle as nb_exc:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(nb_exc))
     return convert_battle_to_field_dto(battle)
+
+
+@battle_router.get("/result")
+@inject
+async def get_battle_result(
+    player_id: PlayerId, battle_id: BattleId, battle_service: FromDishka[BattleService]
+) -> BattleResult:
+    try:
+        battle_result = battle_service.check_battle_result(battle_id, player_id)
+    except NoBattle as nb_exc:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, str(nb_exc))
+    return battle_result
 
 
 @battle_router.get("/client/sse")
