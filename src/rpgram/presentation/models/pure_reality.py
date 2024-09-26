@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from rpgram.domain.models.battle import EffectState, Hint
+from rpgram.domain.utypes import BattleId
 from rpgram.presentation.models import battle
 
 
@@ -36,6 +37,7 @@ class PlayerDTO:
 class BattleFieldDTO:
     """Already done client conversions"""
 
+    battle_id: BattleId
     player: PlayerDTO
     opponent: PlayerDTO | None
     next_move: list[battle.Suggestion]

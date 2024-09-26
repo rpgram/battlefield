@@ -79,10 +79,10 @@ async def clients_battle(
 @battle_router.get("/result")
 @inject
 async def get_battle_result(
-    player_id: PlayerId, battle_id: BattleId, battle_service: FromDishka[BattleService]
+    player_id: PlayerId, battle_service: FromDishka[BattleService]
 ) -> BattleResult:
     try:
-        battle_result = battle_service.check_battle_result(battle_id, player_id)
+        battle_result = battle_service.check_battle_result(player_id)
     except NoBattle as nb_exc:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(nb_exc))
     return battle_result

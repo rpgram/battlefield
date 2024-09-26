@@ -56,6 +56,7 @@ def convert_battle_to_field_dto(
     battle_state: Battle,
 ) -> BattleFieldDTO:
     return BattleFieldDTO(
+        battle_id=battle_state.battle_id,
         player=convert_hero_state_to_dto(battle_state.hero.unit_state),
         opponent=(
             convert_hero_state_to_dto(battle_state.opponent.unit_state)

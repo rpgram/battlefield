@@ -20,7 +20,7 @@ class ActionInteractor:
         hero = battle.hero if by_hero else battle.opponent
         combo_by = hero.plays.previous if hero.plays.previous else self.combo_root
         combo = combo_by.propagate_combo(key, self.combo_root)
-        previous_combo = None
+        previous_combo = self.combo_root
         if combo.is_leaf and combo.action:
             if by_hero:
                 self.world.move.hero.opponent_effect = combo.action.opponent_effect

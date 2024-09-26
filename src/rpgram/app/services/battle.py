@@ -39,13 +39,11 @@ class BattleService:
             raise NoBattle(player_id=player_id)
         return battle
 
-    def check_battle_result(
-        self, battle_id: BattleId, player_id: PlayerId
-    ) -> BattleResult:
-        battle_result = self.battle_repo.get_battle_result(battle_id, player_id)
+    def check_battle_result(self, player_id: PlayerId) -> BattleResult:
+        battle_result = self.battle_repo.get_battle_result(player_id)
         if battle_result:
             return battle_result
-        raise NoBattle(battle_id)
+        raise NoBattle(player_id=player_id)
 
     def start_battle(
         self, player_id: PlayerId, opponent_id: PlayerId | None, streamer: Streamer
@@ -63,7 +61,7 @@ class BattleService:
                 raise NoPlayer(player_id)
             opponent_state = PlayerState(
                 HeroState(opponent.hero.health, []),
-                PlayInfo(player.hero.combo_tree),
+                PlayInfo(player.hero.combo_tree, player.hero.combo_tree),
                 opponent_id,
             )
         else:
@@ -72,7 +70,7 @@ class BattleService:
         battle = CreateBattle(
             PlayerState(
                 HeroState(player.hero.health, []),
-                PlayInfo(player.hero.combo_tree),
+                PlayInfo(player.hero.combo_tree, player.hero.combo_tree),
                 player_id,
             ),
             opponent_state,
@@ -103,7 +101,7 @@ class BattleService:
             raise NoBattle(battle_id)
         player_state = PlayerState(
             HeroState(opponent.hero.health, []),
-            PlayInfo(opponent.hero.combo_tree),
+            PlayInfo(opponent.hero.combo_tree, opponent.hero.combo_tree),
             opponent_id,
         )
         battle.opponent = player_state

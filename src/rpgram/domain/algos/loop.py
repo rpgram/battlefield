@@ -35,12 +35,14 @@ def tick(battle_state: RunningBattle, world: World) -> bool | None:
         world.move.opponent.opponent_effect = None
     effects_tick(battle_state.hero.unit_state)
     effects_tick(battle_state.opponent.unit_state)
+
+    world.move.opponent.opponent_health_delta = 0
+    world.move.hero.opponent_health_delta = 0
+
     if battle_state.hero.unit_state.health <= 0:
         return False
     if battle_state.opponent.unit_state.health <= 0:
         return True
-    world.move.opponent.opponent_health_delta = 0
-    world.move.hero.opponent_health_delta = 0
     return None
 
 

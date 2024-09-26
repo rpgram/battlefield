@@ -94,25 +94,24 @@ class BattleRepository:
         else:
             self._storage.battle_results[battle_id] = for_one_of[0], result_in_storage
 
-    def get_battle_result(
-        self, battle_id: BattleId, player_id: PlayerId
-    ) -> BattleResult | None:
-        result = self._storage.battle_results.get(battle_id)
-        if result is None:
+    def get_battle_result(self, player_id: PlayerId) -> BattleResult | None:
+        res_storage = self._storage.battle_results
+        battle_id = BattleId(-1)
+        for k in res_storage:
+            for p, *_ in res_storage[k]:
+                if p == player_id:
+                    # todo make this ring check(save ts)
+                    if k > battle_id:
+                        battle_id = k
+        if battle_id == -1:
             return None
-        hero_result = None
-        opponent_result = None
-        player_in = False
-        for p, h, r in result:
+        hero_result = opponent_result = None
+        for p, h, r in res_storage[battle_id]:
             if h:
                 hero_result = RelatedBattleResult(p, h, r)
-                if p == player_id:
-                    player_in = True
             else:
                 opponent_result = RelatedBattleResult(p, h, r)
-                if p == player_id:
-                    player_in = True
-        if player_in and hero_result and opponent_result:
+        if hero_result and opponent_result:
             return BattleResult(hero_result, opponent_result)
         return None
 

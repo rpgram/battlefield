@@ -104,7 +104,7 @@ class HeroState:
 @dataclass
 class PlayInfo:
     combo_tree: ComboNode
-    previous: ComboNode | None = None
+    previous: ComboNode
 
 
 @dataclass
