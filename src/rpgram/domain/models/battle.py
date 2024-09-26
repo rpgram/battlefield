@@ -150,4 +150,4 @@ class BattleResult:
     #  todo here is award also
 
 
-SSEEvent = TypeVar("SSEEvent", RunningBattle, BattleResult, Battle)
+SSEEvent = RunningBattle | BattleResult | Battle

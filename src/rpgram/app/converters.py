@@ -6,7 +6,7 @@ from rpgram.domain.errors import NoPlayer
 from rpgram.domain.models.battle import Battle, RunningBattle, PlayerState
 
 
-def check_no_player(player_state: PlayerState | None):
+def check_no_player(player_state: PlayerState | None) -> PlayerState:
     if player_state is None:
         raise NoPlayer
     return player_state

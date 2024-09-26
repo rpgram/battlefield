@@ -1,14 +1,29 @@
+import abc
 from contextlib import suppress
-from typing import Any
+from typing import Any, Protocol, Never
+
+from dishka import AnyOf
 
 from rpgram.domain.algos.trie import COMBO_ROOT
-from rpgram.domain.interfaces.memory_storage import IMemoryEntityStorage, IPlayerStorage
+from rpgram.domain.interfaces.memory_storage import IMemoryEntityStorage, IPlayerStorage, ID
 from rpgram.domain.player import Player, Hero
 from rpgram.domain.utypes import PlayerId
 
 
-class InMemoryPlayers(IMemoryEntityStorage, IPlayerStorage):
-    pass
+class InMemoryPlayers(IMemoryEntityStorage[PlayerId], IPlayerStorage):
+
+    @abc.abstractmethod
+    @property
+    def generate_id(self) -> PlayerId:
+        pass
+
+    @abc.abstractmethod
+    def _next_id(self) -> None:
+        pass
+
+    @abc.abstractmethod
+    def _reset_id(self) -> None:
+        pass
 
 
 class PlayerStorage(InMemoryPlayers):
@@ -22,9 +37,9 @@ class PlayerStorage(InMemoryPlayers):
     def _next_id(self) -> None:
         if self._id == 2**16 - 1:
             self._reset_id()
-            return None
         self._id = PlayerId(self._id + 1)
 
+    @property
     def generate_id(self) -> PlayerId:
         self._next_id()
         return self._id
@@ -37,8 +52,9 @@ class FakeStorage(InMemoryPlayers):
             Player(PlayerId(2), "Gentle", Hero(10, COMBO_ROOT)),
         ]
 
-    def generate_id(self) -> Any:
-        pass
+    @property
+    def generate_id(self) -> PlayerId:
+        raise NotImplemented
 
     def _next_id(self) -> None:
         pass
@@ -53,7 +69,7 @@ class PlayerRepo:
         self._storage = storage
 
     def add_player(self, username: str, hero: Hero) -> PlayerId:
-        _id = self._storage.generate_id()
+        _id = self._storage.generate_id
         player = Player(_id, username, hero)
         self._storage.players[_id] = player
         return _id

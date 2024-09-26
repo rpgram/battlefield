@@ -1,3 +1,5 @@
+from typing import Generic
+
 from rpgram.domain.errors import NoBattle
 from rpgram.domain.interfaces.memory_storage import IMemoryEntityStorage
 from rpgram.domain.models.battle import (
@@ -11,7 +13,7 @@ from rpgram.domain.utypes import BattleId, PlayerId
 from rpgram.presentation.models.battle import Side
 
 
-class BattleStorage(IMemoryEntityStorage):
+class BattleStorage(IMemoryEntityStorage[BattleId]):
     def __init__(self) -> None:
         # todo separate this types storages?
         self.battles: dict[BattleId, Battle | RunningBattle] = {}
@@ -33,7 +35,6 @@ class BattleStorage(IMemoryEntityStorage):
     def _next_id(self) -> None:
         if self._battle_id_counter == 2**32 - 1:
             self._reset_id()
-            return
         self._battle_id_counter = BattleId(self._battle_id_counter + 1)
 
 
@@ -86,7 +87,7 @@ class BattleRepository:
             pb.pop(i, None)
         self._storage.battles.pop(battle_id, None)
 
-    def set_battle_result(self, battle_id: BattleId, result: RelatedBattleResult):
+    def set_battle_result(self, battle_id: BattleId, result: RelatedBattleResult) -> None:
         for_one_of = self._storage.battle_results.get(battle_id)
         result_in_storage = result.player_id, result.is_hero, result.win
         if for_one_of is None:

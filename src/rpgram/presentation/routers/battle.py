@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from typing import AsyncGenerator, Any
 
 from dishka import FromDishka
 from dishka.integrations.fastapi import inject
@@ -10,7 +11,7 @@ from rpgram.app.services.action import ActionInteractor
 from rpgram.app.services.battle import BattleService
 from rpgram.app.sse import Streamer
 from rpgram.domain.errors import AlreadyInBattle, NoPlayer, NoBattle
-from rpgram.domain.models.battle import RunningBattle, SSEEvent, BattleResult, Battle
+from rpgram.domain.models.battle import RunningBattle, BattleResult
 from rpgram.domain.utypes import PlayerId, BattleId
 from rpgram.presentation.models.converter import (
     convert_battle_to_field_dto,
@@ -25,7 +26,7 @@ battle_router = APIRouter(prefix="/battle")
 async def start_battle(
     player_id: PlayerId,
     opponent_id: PlayerId,
-    streamer: FromDishka[Streamer[SSEEvent]],
+    streamer: FromDishka[Streamer],
     battle_service: FromDishka[BattleService],
 ) -> BattleId:
     try:
@@ -91,10 +92,10 @@ async def get_battle_result(
 @battle_router.get("/client/sse")
 @inject
 async def get_battle_sse_client(
-    player_id: PlayerId, streamer: FromDishka[Streamer[SSEEvent]]
+    player_id: PlayerId, streamer: FromDishka[Streamer]
 ) -> EventSourceResponse:
 
-    async def event_streamer():
+    async def event_streamer() -> AsyncGenerator[dict[str, Any], None]:
         with streamer.streamer_context(player_id):
             while True:
                 try:

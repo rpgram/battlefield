@@ -14,7 +14,7 @@ from rpgram.domain.models.battle import (
     World,
     CreateBattle,
     RunningBattle,
-    BattleResult,
+    BattleResult, SSEEvent,
 )
 from rpgram.domain.utypes import PlayerId, BattleId
 from rpgram.presentation.models.battle import Side
