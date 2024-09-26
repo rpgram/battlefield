@@ -39,6 +39,7 @@ class Move:
 class World:
     move: Move
     turn_time: int = 3
+    battle_timeout_sec: int = 15 * 60
 
 
 @dataclass
@@ -136,9 +137,17 @@ class RunningBattle(Battle):
 
 
 @dataclass
+class RelatedBattleResult:
+    player_id: PlayerId
+    is_hero: bool
+    win: bool
+
+
+@dataclass
 class BattleResult:
-    hero_victory: bool
+    hero_result: RelatedBattleResult
+    opponent_result: RelatedBattleResult
     #  todo here is award also
 
 
-SSEEvent = TypeVar("SSEEvent", RunningBattle, BattleResult)
+SSEEvent = TypeVar("SSEEvent", RunningBattle, BattleResult, Battle)

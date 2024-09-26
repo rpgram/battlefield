@@ -1,6 +1,6 @@
 import asyncio
 
-from rpgram.domain.algos.loop import start_battle_loop_until_victory
+from rpgram.domain.algos.loop import battle_loop_until_victory_or_timeout
 from rpgram.domain.models.battle import (
     Battle,
     World,
@@ -19,4 +19,4 @@ from rpgram.domain.models.battle import (
 #     ) -> None:
 #         battle.hero = PlayerState(HeroState(50, []), PlayInfo())
 #         battle.opponent = PlayerState(HeroState(50, []), PlayInfo())
-#         asyncio.create_task(start_battle_loop_until_victory(battle, world))
+#         asyncio.create_task(battle_loop_until_victory_or_timeout(battle, world))

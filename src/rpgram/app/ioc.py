@@ -17,9 +17,10 @@ from rpgram.domain.models.battle import (
 class InteractorsProvider(Provider):
     scope = Scope.REQUEST
 
-
     @provide
-    def action_interactor(self, battle_repo: BattleRepository, world: World) -> ActionInteractor:
+    def action_interactor(
+        self, battle_repo: BattleRepository, world: World
+    ) -> ActionInteractor:
         return ActionInteractor(COMBO_ROOT, world, battle_repo)
 
 

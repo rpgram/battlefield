@@ -1,6 +1,12 @@
 from rpgram.domain.errors import NoBattle
 from rpgram.domain.interfaces.memory_storage import IMemoryEntityStorage
-from rpgram.domain.models.battle import Battle, CreateBattle, RunningBattle
+from rpgram.domain.models.battle import (
+    Battle,
+    CreateBattle,
+    RunningBattle,
+    RelatedBattleResult,
+    BattleResult,
+)
 from rpgram.domain.utypes import BattleId, PlayerId
 from rpgram.presentation.models.battle import Side
 
@@ -10,6 +16,10 @@ class BattleStorage(IMemoryEntityStorage):
         # todo separate this types storages?
         self.battles: dict[BattleId, Battle | RunningBattle] = {}
         self.players_battle: dict[PlayerId, tuple[BattleId, Side]] = {}
+        # player_id, is_hero, win
+        self.battle_results: dict[BattleId, tuple[tuple[PlayerId, bool, bool], ...]] = (
+            {}
+        )
         self._reset_id()
 
     def _reset_id(self) -> None:
@@ -72,6 +82,36 @@ class BattleRepository:
             if pb[i][0] == battle_id:
                 pb.pop(i)
         self._storage.battles.pop(battle_id)
+
+    def set_battle_result(self, battle_id: BattleId, result: RelatedBattleResult):
+        for_one_of = self._storage.battle_results.get(battle_id)
+        result_in_storage = result.player_id, result.is_hero, result.win
+        if for_one_of is None:
+            self._storage.battle_results[battle_id] = (result_in_storage,)
+        else:
+            self._storage.battle_results[battle_id] = for_one_of[0], result_in_storage
+
+    def get_battle_result(
+        self, battle_id: BattleId, player_id: PlayerId
+    ) -> BattleResult | None:
+        result = self._storage.battle_results.get(battle_id)
+        if result is None:
+            return None
+        hero_result = None
+        opponent_result = None
+        player_in = False
+        for p, h, r in result:
+            if h:
+                hero_result = RelatedBattleResult(p, h, r)
+                if p == player_id:
+                    player_in = True
+            else:
+                opponent_result = RelatedBattleResult(p, h, r)
+                if p == player_id:
+                    player_in = True
+        if player_in and hero_result and opponent_result:
+            return BattleResult(hero_result, opponent_result)
+        return None
 
     # def get_opponents(self, battle_id: BattleId) -> tuple[PlayerId, PlayerId]:
     #     pb = self._storage.players_battle

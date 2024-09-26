@@ -5,7 +5,9 @@ from rpgram.domain.utypes import PlayerId
 
 
 class ActionInteractor:
-    def __init__(self, combo_root: ComboNode, world: World, battle_repo: BattleRepository):
+    def __init__(
+        self, combo_root: ComboNode, world: World, battle_repo: BattleRepository
+    ):
         self.world = world
         self.battle_repo = battle_repo
         self.combo_root = combo_root

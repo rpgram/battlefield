@@ -6,6 +6,7 @@ from rpgram.domain.player import Player
 
 class IPlayerStorage:
     """Dependency hint"""
+
     players: list[Player]
 
 

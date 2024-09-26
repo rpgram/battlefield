@@ -2,7 +2,7 @@ import asyncio
 
 from rpgram.app.converters import battle_to_run
 from rpgram.app.sse import Streamer
-from rpgram.domain.algos.loop import start_battle_loop_until_victory
+from rpgram.domain.algos.loop import battle_loop_until_victory_or_timeout
 from rpgram.data.battle import BattleRepository
 from rpgram.data.player import PlayerRepo
 from rpgram.domain.errors import AlreadyInBattle, NoPlayer, NoBattle
@@ -14,6 +14,7 @@ from rpgram.domain.models.battle import (
     World,
     CreateBattle,
     RunningBattle,
+    BattleResult,
 )
 from rpgram.domain.utypes import PlayerId, BattleId
 from rpgram.presentation.models.battle import Side
@@ -30,10 +31,23 @@ class BattleService:
         self.player_repo = player_repo
         self.battle_repo = battle_repo
 
+        # todo isn't it too much player id?
+
     def get_battle(self, player_id: PlayerId) -> Battle:
         battle = self.battle_repo.get_battle(player_id)
         if battle is None:
             raise NoBattle(player_id=player_id)
+        return battle
+
+    def get_battle_and_check_result(
+        self, battle_id: BattleId, player_id: PlayerId
+    ) -> Battle | RunningBattle | BattleResult:
+        battle = self.battle_repo.get_battle(battle_id=battle_id)
+        if battle is None:
+            battle_result = self.battle_repo.get_battle_result(battle_id, player_id)
+            if battle_result:
+                return battle_result
+            raise NoBattle(battle_id)
         return battle
 
     def start_battle(
@@ -73,13 +87,15 @@ class BattleService:
                 raise NoBattle(battle_id)
             if isinstance(running_battle, RunningBattle):
                 asyncio.create_task(
-                    start_battle_loop_until_victory(
-                        running_battle, self.world, streamer
+                    battle_loop_until_victory_or_timeout(
+                        running_battle, self.world, streamer, self.battle_repo
                     )
                 )
         return battle_id
 
-    def connect(self, opponent_id: PlayerId, battle_id: BattleId, streamer: Streamer) -> None:
+    def connect(
+        self, opponent_id: PlayerId, battle_id: BattleId, streamer: Streamer
+    ) -> None:
         if self.battle_repo.get_battle(opponent_id):
             raise AlreadyInBattle(opponent_id)
         opponent = self.player_repo.get_player(opponent_id)
@@ -98,7 +114,9 @@ class BattleService:
         running_battle = battle_to_run(battle)
         self.battle_repo.upgrade_battle(running_battle)
         asyncio.create_task(
-            start_battle_loop_until_victory(running_battle, self.world, streamer)
+            battle_loop_until_victory_or_timeout(
+                running_battle, self.world, streamer, self.battle_repo
+            )
         )
 
     def leave_battle(self, player_id: PlayerId) -> None:
