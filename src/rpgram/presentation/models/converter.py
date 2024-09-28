@@ -8,6 +8,7 @@ from rpgram.domain.models.battle import (
     PlayerState,
     Hint,
 )
+from rpgram.presentation.models.battle import WaitingBattle
 from rpgram.presentation.models.pure_reality import (
     BattleDTO,
     PlayerDTO,
@@ -90,3 +91,7 @@ convert_battle_to_dto = get_converter(
         ),
     ],
 )
+
+
+def waiting_battles_converter(battle_state: Battle) -> WaitingBattle:
+    return WaitingBattle(battle_state.hero.player_id, battle_state.battle_id)

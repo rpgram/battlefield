@@ -18,8 +18,10 @@ from rpgram.domain.models.battle import (
     BattleStarted,
 )
 from rpgram.domain.utypes import PlayerId, BattleId
+from rpgram.presentation.models.battle import WaitingBattle
 from rpgram.presentation.models.converter import (
     convert_battle_to_field_dto,
+    waiting_battles_converter,
 )
 from rpgram.presentation.models.pure_reality import BattleFieldDTO
 
@@ -48,8 +50,20 @@ async def start_battle(
 
 @battle_router.get("")
 @inject
-async def get_battles(battle_service: FromDishka[BattleService]) -> list[Battle]:
-    return battle_service.get_all_battles()
+async def get_battles(battle_service: FromDishka[BattleService]) -> list[WaitingBattle]:
+    return [waiting_battles_converter(b) for b in battle_service.get_all_battles()]
+
+
+@battle_router.delete("/leave")
+@inject
+async def leave_battle(
+    player_id: PlayerId, battle_service: FromDishka[BattleService]
+) -> bool:
+    try:
+        battle_service.leave_battle(player_id)
+        return True
+    except NoBattle:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "No battle for player")
 
 
 @battle_router.post("/connect")

@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
 
+from rpgram.domain.utypes import PlayerId, BattleId
+
 
 class Side(Enum):
     LEFT = 1
@@ -69,3 +71,9 @@ class BattleField:
     next_move: list[Suggestion]
     complete_actions: list[BattleEvent]
     moves: list[Move]
+
+
+@dataclass
+class WaitingBattle:
+    player_id: PlayerId
+    battle_id: BattleId
