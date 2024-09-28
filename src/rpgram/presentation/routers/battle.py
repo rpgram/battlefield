@@ -73,7 +73,7 @@ async def connect_to_battle(
     battle_id: BattleId,
     battle_service: FromDishka[BattleService],
     streamer: FromDishka[Streamer],
-) -> BattleStarted:
+) -> int:
     return battle_service.connect(player_id, battle_id, streamer)
 
 

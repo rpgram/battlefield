@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from rpgram.app.ioc import BattleProvider, InteractorsProvider
 from rpgram.presentation.routers.battle import battle_router
 from rpgram.presentation.routers.fakes import fake_router
+from rpgram.presentation.routers.players import players_router
 
 
 @asynccontextmanager
@@ -19,6 +20,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 def create_app() -> FastAPI:
     app = FastAPI(lifespan=lifespan)
     app.include_router(fake_router)
+    app.include_router(players_router)
     app.include_router(battle_router)
     container = make_async_container(BattleProvider(), InteractorsProvider())
     setup_dishka(container, app)

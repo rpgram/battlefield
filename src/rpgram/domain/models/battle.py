@@ -37,7 +37,7 @@ class Move:
 
 @dataclass
 class BattleStarted:
-    start_time: float
+    start_time: int | None
     battle_id: BattleId
 
 

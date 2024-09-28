@@ -83,3 +83,6 @@ class PlayerRepo:
                 return next(p for p in self._storage.players if p.username == param)
             return next(p for p in self._storage.players if p.player_id == param)
         return None
+
+    def get_players(self) -> list[Player]:
+        return self._storage.players

@@ -100,14 +100,15 @@ class BattleService:
                         running_battle, self.world, streamer, self.battle_repo
                     )
                 )
-        battle_started = time.time()
-        if is_npc:
-            battle_started += self.world.battle_preparation
-        return BattleStarted(battle_started, battle_id)
+            battle_started = time.time()
+            if is_npc:
+                battle_started += self.world.battle_preparation
+            return BattleStarted(int(battle_started), battle_id)
+        return BattleStarted(None, battle_id)
 
     def connect(
         self, opponent_id: PlayerId, battle_id: BattleId, streamer: Streamer
-    ) -> BattleStarted:
+    ) -> int:
         if self.battle_repo.get_battle(opponent_id):
             raise AlreadyInBattle(opponent_id)
         opponent = self.player_repo.get_player(opponent_id)
@@ -130,7 +131,7 @@ class BattleService:
                 running_battle, self.world, streamer, self.battle_repo
             )
         )
-        return BattleStarted(time.time() + self.world.battle_preparation, battle_id)
+        return int(time.time() + self.world.battle_preparation)
 
     def leave_battle(self, player_id: PlayerId) -> None:
         battle = self.battle_repo.get_battle(player_id)
