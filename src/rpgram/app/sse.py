@@ -48,6 +48,10 @@ class StreamerContext:
     def __enter__(self) -> None:
         self.streamer.init_stream(self.player_id)
 
-    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
         self.streamer.close_stream(self.player_id)
-

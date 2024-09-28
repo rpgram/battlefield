@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 from rpgram.app.converters import battle_to_run
 from rpgram.app.sse import Streamer
@@ -14,7 +15,9 @@ from rpgram.domain.models.battle import (
     World,
     CreateBattle,
     RunningBattle,
-    BattleResult, SSEEvent,
+    BattleResult,
+    SSEEvent,
+    BattleStarted,
 )
 from rpgram.domain.utypes import PlayerId, BattleId
 from rpgram.presentation.models.battle import Side
@@ -33,6 +36,13 @@ class BattleService:
 
         # todo isn't it too much player id?
 
+    def get_all_battles(self) -> list[Battle]:
+        return [
+            battle
+            for battle in self.battle_repo.get_battles()
+            if isinstance(battle, Battle)
+        ]
+
     def get_battle(self, player_id: PlayerId) -> Battle:
         battle = self.battle_repo.get_battle(player_id)
         if battle is None:
@@ -46,8 +56,12 @@ class BattleService:
         raise NoBattle(player_id=player_id)
 
     def start_battle(
-        self, player_id: PlayerId, opponent_id: PlayerId | None, streamer: Streamer
-    ) -> BattleId:
+        self,
+        player_id: PlayerId,
+        opponent_id: PlayerId | None,
+        streamer: Streamer,
+        is_npc: bool = False,
+    ) -> BattleStarted:
         if self.battle_repo.get_battle(player_id):
             raise AlreadyInBattle(player_id)
         if opponent_id and self.battle_repo.get_battle(opponent_id):
@@ -86,11 +100,14 @@ class BattleService:
                         running_battle, self.world, streamer, self.battle_repo
                     )
                 )
-        return battle_id
+        battle_started = time.time()
+        if is_npc:
+            battle_started += self.world.battle_preparation
+        return BattleStarted(battle_started, battle_id)
 
     def connect(
         self, opponent_id: PlayerId, battle_id: BattleId, streamer: Streamer
-    ) -> None:
+    ) -> BattleStarted:
         if self.battle_repo.get_battle(opponent_id):
             raise AlreadyInBattle(opponent_id)
         opponent = self.player_repo.get_player(opponent_id)
@@ -113,6 +130,7 @@ class BattleService:
                 running_battle, self.world, streamer, self.battle_repo
             )
         )
+        return BattleStarted(time.time() + self.world.battle_preparation, battle_id)
 
     def leave_battle(self, player_id: PlayerId) -> None:
         battle = self.battle_repo.get_battle(player_id)

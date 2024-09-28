@@ -11,7 +11,12 @@ from rpgram.app.services.action import ActionInteractor
 from rpgram.app.services.battle import BattleService
 from rpgram.app.sse import Streamer
 from rpgram.domain.errors import AlreadyInBattle, NoPlayer, NoBattle
-from rpgram.domain.models.battle import RunningBattle, BattleResult
+from rpgram.domain.models.battle import (
+    RunningBattle,
+    BattleResult,
+    Battle,
+    BattleStarted,
+)
 from rpgram.domain.utypes import PlayerId, BattleId
 from rpgram.presentation.models.converter import (
     convert_battle_to_field_dto,
@@ -28,7 +33,7 @@ async def start_battle(
     opponent_id: PlayerId,
     streamer: FromDishka[Streamer],
     battle_service: FromDishka[BattleService],
-) -> BattleId:
+) -> BattleStarted:
     try:
         return battle_service.start_battle(player_id, opponent_id, streamer)
     except AlreadyInBattle as aib_exc:
@@ -41,16 +46,21 @@ async def start_battle(
         )
 
 
-# @battle_router.get("")
-# @inject
-# async def get_battle(
-#     player_id: PlayerId, battle_service: FromDishka[BattleService]
-# ) -> BattleDTO:
-#     try:
-#         battle = battle_service.get_battle(player_id)
-#     except NoBattle as nb_exc:
-#         raise HTTPException(status.HTTP_404_NOT_FOUND, str(nb_exc))
-#     return convert_battle_to_dto(battle)
+@battle_router.get("")
+@inject
+async def get_battles(battle_service: FromDishka[BattleService]) -> list[Battle]:
+    return battle_service.get_all_battles()
+
+
+@battle_router.post("/connect")
+@inject
+async def connect_to_battle(
+    player_id: PlayerId,
+    battle_id: BattleId,
+    battle_service: FromDishka[BattleService],
+    streamer: FromDishka[Streamer],
+) -> BattleStarted:
+    return battle_service.connect(player_id, battle_id, streamer)
 
 
 @battle_router.post("/{key}")

@@ -36,10 +36,17 @@ class Move:
 
 
 @dataclass
+class BattleStarted:
+    start_time: float
+    battle_id: BattleId
+
+
+@dataclass
 class World:
     move: Move
     turn_time: int = 3
     battle_timeout_sec: int = 15 * 60
+    battle_preparation: int = 3
 
 
 @dataclass

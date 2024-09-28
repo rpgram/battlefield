@@ -87,7 +87,9 @@ class BattleRepository:
             pb.pop(i, None)
         self._storage.battles.pop(battle_id, None)
 
-    def set_battle_result(self, battle_id: BattleId, result: RelatedBattleResult) -> None:
+    def set_battle_result(
+        self, battle_id: BattleId, result: RelatedBattleResult
+    ) -> None:
         for_one_of = self._storage.battle_results.get(battle_id)
         result_in_storage = result.player_id, result.is_hero, result.win
         if for_one_of is None:
@@ -125,3 +127,5 @@ class BattleRepository:
     #                 player_id
 
     # def set_player(self, player):
+    def get_battles(self) -> list[Battle | RunningBattle]:
+        return list(self._storage.battles.values())

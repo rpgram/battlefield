@@ -1,3 +1,4 @@
+import asyncio
 import time
 from asyncio import sleep
 
@@ -10,7 +11,8 @@ from rpgram.domain.models.battle import (
     HeroState,
     BattleResult,
     RunningBattle,
-    RelatedBattleResult, SSEEvent,
+    RelatedBattleResult,
+    SSEEvent,
 )
 
 
@@ -46,14 +48,16 @@ def tick(battle_state: RunningBattle, world: World) -> bool | None:
 
 
 async def battle_loop_until_victory_or_timeout(
-        battle_state: RunningBattle,
-        world: World,
-        streamer: Streamer,
-        battle_repo: BattleRepository,
-        npc: bool = False,
+    battle_state: RunningBattle,
+    world: World,
+    streamer: Streamer,
+    battle_repo: BattleRepository,
+    npc: bool = False,
 ) -> None:
     # if battle_state.opponent is None:
     #     return
+    if not npc:
+        await asyncio.sleep(world.battle_preparation)
     ts = time.time()
     deadline = ts + world.battle_timeout_sec
     while True:
@@ -79,7 +83,9 @@ async def battle_loop_until_victory_or_timeout(
         else:
             battle_event = battle_state
         hero_streaming = battle_state.hero.player_id in streamer.battle_streams
-        opponent_streaming = npc is False and battle_state.opponent.player_id in streamer.battle_streams
+        opponent_streaming = (
+            npc is False and battle_state.opponent.player_id in streamer.battle_streams
+        )
         if result_event is not None:
             if hero_streaming:
                 streamer.send_battle(battle_state.hero.player_id, result_event)

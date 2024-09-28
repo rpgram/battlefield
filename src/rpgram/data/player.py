@@ -5,17 +5,20 @@ from typing import Any, Protocol, Never
 from dishka import AnyOf
 
 from rpgram.domain.algos.trie import COMBO_ROOT
-from rpgram.domain.interfaces.memory_storage import IMemoryEntityStorage, IPlayerStorage, ID
+from rpgram.domain.interfaces.memory_storage import (
+    IMemoryEntityStorage,
+    IPlayerStorage,
+    ID,
+)
 from rpgram.domain.player import Player, Hero
 from rpgram.domain.utypes import PlayerId
 
 
 class InMemoryPlayers(IMemoryEntityStorage[PlayerId], IPlayerStorage):
 
-    @abc.abstractmethod
     @property
     def generate_id(self) -> PlayerId:
-        pass
+        return PlayerId(0)
 
     @abc.abstractmethod
     def _next_id(self) -> None:
