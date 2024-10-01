@@ -109,8 +109,9 @@ class BattleService:
     def connect(
         self, opponent_id: PlayerId, battle_id: BattleId, streamer: Streamer
     ) -> int:
-        if self.battle_repo.get_battle(opponent_id):
-            raise AlreadyInBattle(opponent_id)
+        # todo return this to restrict self battles
+        # if self.battle_repo.get_battle(opponent_id):
+        #     raise AlreadyInBattle(opponent_id)
         opponent = self.player_repo.get_player(opponent_id)
         if opponent is None:
             raise NoPlayer(opponent_id)

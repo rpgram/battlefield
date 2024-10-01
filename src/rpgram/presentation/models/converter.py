@@ -22,7 +22,7 @@ def combo_node_coercer(previous: ComboNode | None) -> str | None:
 
 
 def effect_description(hero_state: HeroState) -> list[str]:
-    return [f"{e.effect.name}({e.tick + 1}" for e in hero_state.effect_states]
+    return [f"{e.effect.name}({e.tick + 1})" for e in hero_state.effect_states]
 
 
 def move(key: str) -> battle.Move:

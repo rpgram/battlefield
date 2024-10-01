@@ -1,3 +1,4 @@
+import time
 from dataclasses import asdict
 from typing import AsyncGenerator, Any
 
@@ -6,6 +7,7 @@ from dishka.integrations.fastapi import inject
 from fastapi import APIRouter, HTTPException
 from sse_starlette import EventSourceResponse
 from starlette import status
+from starlette.responses import JSONResponse
 
 from rpgram.app.services.action import ActionInteractor
 from rpgram.app.services.battle import BattleService
@@ -32,9 +34,9 @@ battle_router = APIRouter(prefix="/battle")
 @inject
 async def start_battle(
     player_id: PlayerId,
-    opponent_id: PlayerId,
     streamer: FromDishka[Streamer],
     battle_service: FromDishka[BattleService],
+    opponent_id: PlayerId | None = None,
 ) -> BattleStarted:
     try:
         return battle_service.start_battle(player_id, opponent_id, streamer)
@@ -93,12 +95,15 @@ async def act_in_battle(
 @inject
 async def clients_battle(
     player_id: PlayerId, battle_service: FromDishka[BattleService]
-) -> BattleFieldDTO | BattleResult:
+) -> BattleFieldDTO | dict:
     try:
         battle = battle_service.get_battle(player_id)
     except NoBattle as nb_exc:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(nb_exc))
-    return convert_battle_to_field_dto(battle)
+    dto = convert_battle_to_field_dto(battle)
+    if dto.opponent is None:
+        return JSONResponse(asdict(dto), status.HTTP_202_ACCEPTED)
+    return dto
 
 
 @battle_router.get("/result")

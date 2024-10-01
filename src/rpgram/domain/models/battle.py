@@ -46,7 +46,7 @@ class World:
     move: Move
     turn_time: int = 3
     battle_timeout_sec: int = 15 * 60
-    battle_preparation: int = 3
+    battle_preparation: int = 6
 
 
 @dataclass

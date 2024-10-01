@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from hypercorn.config import Config
@@ -14,5 +15,6 @@ def hyper_app() -> Any:
 
 if __name__ == "__main__":
     config = Config()
+    config.loglevel = "DEBUG"
     config.bind = ["localhost:8000"]
     asyncio.run(serve(hyper_app(), config))
