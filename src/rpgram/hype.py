@@ -16,5 +16,6 @@ def hyper_app() -> Any:
 if __name__ == "__main__":
     config = Config()
     config.loglevel = "DEBUG"
-    config.bind = ["localhost:8000"]
+    config.bind = ["0.0.0.0:8000"]
+    logging.warning("Setup finished...")
     asyncio.run(serve(hyper_app(), config))

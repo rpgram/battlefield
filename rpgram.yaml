@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rpgram
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      rpgram: web
+  template:
+    metadata:
+      labels:
+        rpgram: web
+    spec:
+      containers:
+        - name: rpgram-backend
+          image: rpgram
+          imagePullPolicy: Never
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rpgram-entrypoint
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+    rpgram: web
+  ports:
+    - port: 8000
+      targetPort: 8000
+      nodePort: 30002

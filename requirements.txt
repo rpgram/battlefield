@@ -1,2 +1,5 @@
 Hypercorn
 fastapi
+dishka
+adaptix
+sse-starlette
