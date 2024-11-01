@@ -9,6 +9,7 @@ from sse_starlette import EventSourceResponse
 from starlette import status
 from starlette.responses import JSONResponse
 
+from rpgram.app.interactors.process import BattlePollInteractor
 from rpgram.app.services.action import ActionInteractor
 from rpgram.app.services.battle import BattleService
 from rpgram.app.sse import Streamer
@@ -23,7 +24,7 @@ from rpgram.domain.utypes import PlayerId, BattleId
 from rpgram.presentation.models.battle import WaitingBattle
 from rpgram.presentation.models.converter import (
     convert_battle_to_field_dto,
-    waiting_battles_converter,
+    waiting_battles_converter, convert_battle_to_dto_by_side,
 )
 from rpgram.presentation.models.pure_reality import BattleFieldDTO
 
@@ -94,16 +95,16 @@ async def act_in_battle(
 @battle_router.get("/client")
 @inject
 async def clients_battle(
-    player_id: PlayerId, battle_service: FromDishka[BattleService]
-) -> BattleFieldDTO | dict:
+    player_id: PlayerId, interactor: FromDishka[BattlePollInteractor]
+) -> BattleFieldDTO:
     try:
-        battle = battle_service.get_battle(player_id)
-    except NoBattle as nb_exc:
+        dto = interactor.execute(player_id)
+    except (NoBattle, NoPlayer) as nb_exc:
         raise HTTPException(status.HTTP_404_NOT_FOUND, str(nb_exc))
-    dto = convert_battle_to_field_dto(battle)
     if dto.opponent is None:
-        return JSONResponse(asdict(dto), status.HTTP_202_ACCEPTED)
+        raise HTTPException(status.HTTP_202_ACCEPTED, "Not started yet")
     return dto
+
 
 
 @battle_router.get("/result")

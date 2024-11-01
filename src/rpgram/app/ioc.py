@@ -1,5 +1,6 @@
 from dishka import Provider, provide, Scope
 
+from rpgram.app.interactors.process import BattlePollInteractor
 from rpgram.app.services.action import ActionInteractor
 from rpgram.app.services.battle import BattleService
 from rpgram.app.sse import Streamer
@@ -22,6 +23,8 @@ class InteractorsProvider(Provider):
         self, battle_repo: BattleRepository, world: World
     ) -> ActionInteractor:
         return ActionInteractor(COMBO_ROOT, world, battle_repo)
+
+    battle_interactor = provide(BattlePollInteractor)
 
 
 class BattleProvider(Provider):

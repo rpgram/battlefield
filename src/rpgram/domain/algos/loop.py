@@ -74,7 +74,7 @@ async def battle_loop_until_victory_or_timeout(
             opponent_result = RelatedBattleResult(
                 battle_state.opponent.player_id,
                 is_hero=False,
-                win=finish or time_is_over,
+                win=not finish or time_is_over,
             )
             result_event = BattleResult(hero_result, opponent_result)
             battle_repo.set_battle_result(battle_state.battle_id, hero_result)

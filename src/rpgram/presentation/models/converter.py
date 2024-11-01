@@ -1,6 +1,7 @@
 from adaptix.conversion import get_converter, link
 from adaptix import P
 
+from rpgram.domain.errors import NoPlayer
 from rpgram.domain.models.battle import (
     Battle,
     HeroState,
@@ -8,7 +9,7 @@ from rpgram.domain.models.battle import (
     PlayerState,
     Hint,
 )
-from rpgram.presentation.models.battle import WaitingBattle
+from rpgram.presentation.models.battle import WaitingBattle, Side
 from rpgram.presentation.models.pure_reality import (
     BattleDTO,
     PlayerDTO,
@@ -69,6 +70,20 @@ def convert_battle_to_field_dto(
         moves=[battle.Move(3), battle.Move(2), battle.Move(1)],
     )
 
+
+def convert_battle_to_dto_by_side(battle_state: Battle, side: Side) -> BattleFieldDTO:
+    if side == Side.LEFT:
+        return convert_battle_to_field_dto(battle_state)
+    if battle_state.opponent is None:
+        raise NoPlayer
+    return BattleFieldDTO(
+        battle_id=battle_state.battle_id,
+        player=convert_hero_state_to_dto(battle_state.opponent.unit_state),
+        opponent=convert_hero_state_to_dto(battle_state.hero.unit_state),
+        next_move=get_players_hints(battle_state.opponent),
+        complete_actions=[],
+        moves=[battle.Move(2), battle.Move(1)]
+    )
 
 # def convert_hero_state_to_dto(hero_state: PlayerState) -> HeroStateDTO:
 #     return HeroStateDTO(

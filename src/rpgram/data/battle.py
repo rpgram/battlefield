@@ -65,6 +65,12 @@ class BattleRepository:
     ) -> None:
         self._storage.players_battle[player_id] = battle_id, side
 
+    def get_players_side(self, player_id: PlayerId) -> Side | None:
+        players_position = self._storage.players_battle.get(player_id)
+        if players_position is None:
+            return None
+        return players_position[1]
+
     def get_battle(
         self, player_id: PlayerId | None = None, battle_id: BattleId | None = None
     ) -> Battle | RunningBattle | None:
