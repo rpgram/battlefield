@@ -89,7 +89,7 @@ class BattleService:
             ),
             opponent_state,
         )
-        battle_id = self.battle_repo.add_battle(battle, player_id)
+        battle_id = self.battle_repo.add_battle(battle)
         if opponent_state is not None:
             running_battle = self.battle_repo.get_battle(battle_id=battle_id)
             if running_battle is None:

@@ -1,5 +1,3 @@
-from typing import Generic
-
 from rpgram.domain.errors import NoBattle
 from rpgram.domain.interfaces.memory_storage import IMemoryEntityStorage
 from rpgram.domain.models.battle import (
@@ -48,7 +46,7 @@ class BattleRepository:
             raise NoBattle(battle.battle_id)
         self._storage.battles[battle.battle_id] = battle
 
-    def add_battle(self, battle: CreateBattle, player_id: PlayerId) -> BattleId:
+    def add_battle(self, battle: CreateBattle) -> BattleId:
         battle_id = self._storage.generate_id
         if battle.opponent is None:
             to_insert = Battle(hero=battle.hero, opponent=None, battle_id=battle_id)
@@ -57,7 +55,7 @@ class BattleRepository:
                 hero=battle.hero, opponent=battle.opponent, battle_id=battle_id
             )
         self._storage.battles[battle_id] = to_insert
-        self.connect_side(player_id, Side.LEFT, battle_id)
+        self.connect_side(battle.hero.player_id, Side.LEFT, battle_id)
         return battle_id
 
     def connect_side(

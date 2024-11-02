@@ -43,7 +43,7 @@ class BattleStarted:
 
 @dataclass
 class World:
-    move: Move
+    move: Move  # fixme this place is actualy very bad,
     turn_time: int = 3
     battle_timeout_sec: int = 15 * 60
     battle_preparation: int = 6
