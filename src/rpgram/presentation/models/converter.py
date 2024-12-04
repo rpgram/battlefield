@@ -82,8 +82,9 @@ def convert_battle_to_dto_by_side(battle_state: Battle, side: Side) -> BattleFie
         opponent=convert_hero_state_to_dto(battle_state.hero.unit_state),
         next_move=get_players_hints(battle_state.opponent),
         complete_actions=[],
-        moves=[battle.Move(2), battle.Move(1)]
+        moves=[battle.Move(2), battle.Move(1)],
     )
+
 
 # def convert_hero_state_to_dto(hero_state: PlayerState) -> HeroStateDTO:
 #     return HeroStateDTO(

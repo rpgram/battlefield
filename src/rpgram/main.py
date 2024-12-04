@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
+from dishka.plotter import render_d2
 from dishka import make_async_container
 from dishka.integrations.fastapi import setup_dishka as set_dish_api
 from dishka.integrations.faststream import setup_dishka as set_dish_stream
@@ -18,11 +19,11 @@ from rpgram.presentation.routers.players import players_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    fas = create_faststream()
-    assert fas.broker
-    await fas.broker.start()
+    # fas = create_faststream()
+    # assert fas.broker
+    # await fas.broker.start()
     yield None
-    await fas.broker.close()
+    # await fas.broker.close()
     await app.state.dishka_container.close()
 
 
@@ -45,7 +46,6 @@ def create_fastapi_app() -> FastAPI:
     app.include_router(battle_router)
     set_dish_api(container, app)
     return app
-
 
 
 def create_app():

@@ -7,5 +7,3 @@ def get_players(player_repo: PlayerRepo) -> list[PlayerDTO]:
         PlayerDTO(username=p.username, player_id=p.player_id)
         for p in player_repo.get_players()
     ]
-
-

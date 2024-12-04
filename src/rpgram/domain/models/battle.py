@@ -152,6 +152,7 @@ class RelatedBattleResult:
 
 @dataclass
 class BattleResult:
+    battle_id: BattleId
     hero_result: RelatedBattleResult
     opponent_result: RelatedBattleResult
     #  todo here is award also
