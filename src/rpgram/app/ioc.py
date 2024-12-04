@@ -1,3 +1,12 @@
+from typing import AsyncIterable
+
+import aio_pika
+from aio_pika import RobustConnection
+from aio_pika.abc import (
+    AbstractRobustConnection,
+    AbstractRobustChannel,
+    AbstractChannel,
+)
 from dishka import Provider, provide, Scope
 
 from rpgram.app.interactors.create_battle import StartBattleMicroservices
@@ -7,7 +16,9 @@ from rpgram.app.services.battle import BattleService
 from rpgram.app.sse import Streamer
 from rpgram.data.battle import BattleStorage, BattleRepository
 from rpgram.data.player import PlayerRepo, PlayerStorage, FakeStorage, InMemoryPlayers
+from rpgram.data.rabbit import RabbitGateway
 from rpgram.domain.algos.trie import COMBO_ROOT
+from rpgram.domain.apis import StatisticsGateway
 from rpgram.domain.interfaces.memory_storage import IPlayerStorage
 from rpgram.domain.models.battle import (
     World,
@@ -40,7 +51,12 @@ class BattleProvider(Provider):
     player_repo = provide(PlayerRepo)
     streamer = provide(Streamer, scope=Scope.APP)
 
-    battle_service = provide(BattleService)
+    battle_service = provide(BattleService, scope=Scope.REQUEST)
+
+    @provide
+    async def aio_pika_con(self) -> StatisticsGateway:
+        con = await aio_pika.connect_robust()
+        return RabbitGateway(con)
 
     @provide
     def world(self) -> World:

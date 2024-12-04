@@ -6,6 +6,7 @@ from rpgram.app.sse import Streamer
 from rpgram.domain.algos.loop import battle_loop_until_victory_or_timeout
 from rpgram.data.battle import BattleRepository
 from rpgram.data.player import PlayerRepo
+from rpgram.domain.apis import StatisticsGateway
 from rpgram.domain.errors import AlreadyInBattle, NoPlayer, NoBattle
 from rpgram.domain.models.battle import (
     PlayerState,
@@ -29,7 +30,9 @@ class BattleService:
         battle_repo: BattleRepository,
         player_repo: PlayerRepo,
         world: World,
+        stats: StatisticsGateway,
     ):
+        self.stats = stats
         self.world = world
         self.player_repo = player_repo
         self.battle_repo = battle_repo
@@ -97,7 +100,11 @@ class BattleService:
             if isinstance(running_battle, RunningBattle):
                 asyncio.create_task(
                     battle_loop_until_victory_or_timeout(
-                        running_battle, self.world, streamer, self.battle_repo
+                        running_battle,
+                        self.world,
+                        streamer,
+                        self.battle_repo,
+                        self.stats,
                     )
                 )
             battle_started = time.time()
@@ -129,7 +136,7 @@ class BattleService:
         self.battle_repo.upgrade_battle(running_battle)
         asyncio.create_task(
             battle_loop_until_victory_or_timeout(
-                running_battle, self.world, streamer, self.battle_repo
+                running_battle, self.world, streamer, self.battle_repo, self.stats
             )
         )
         return int(time.time() + self.world.battle_preparation)

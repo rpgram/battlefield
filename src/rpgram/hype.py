@@ -6,11 +6,11 @@ from hypercorn.config import Config
 import asyncio
 from hypercorn.asyncio import serve
 
-from rpgram.main import create_app
+from rpgram.main import create_fastapi_app
 
 
 def hyper_app() -> Any:
-    return create_app()
+    return create_fastapi_app()
 
 
 if __name__ == "__main__":

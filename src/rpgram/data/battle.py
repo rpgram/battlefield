@@ -119,7 +119,7 @@ class BattleRepository:
             else:
                 opponent_result = RelatedBattleResult(p, h, r)
         if hero_result and opponent_result:
-            return BattleResult(hero_result, opponent_result)
+            return BattleResult(battle_id, hero_result, opponent_result)
         return None
 
     # def get_opponents(self, battle_id: BattleId) -> tuple[PlayerId, PlayerId]:

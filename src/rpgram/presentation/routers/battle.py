@@ -9,6 +9,9 @@ from sse_starlette import EventSourceResponse
 from starlette import status
 from starlette.responses import JSONResponse
 
+from rpgram.app.interactors.create_battle import StartBattleMicroservices
+from rpgram.presentation.queue import models
+
 from rpgram.app.interactors.process import BattlePollInteractor
 from rpgram.app.services.action import ActionInteractor
 from rpgram.app.services.battle import BattleService
@@ -24,9 +27,11 @@ from rpgram.domain.utypes import PlayerId, BattleId
 from rpgram.presentation.models.battle import WaitingBattle
 from rpgram.presentation.models.converter import (
     convert_battle_to_field_dto,
-    waiting_battles_converter, convert_battle_to_dto_by_side,
+    waiting_battles_converter,
+    convert_battle_to_dto_by_side,
 )
 from rpgram.presentation.models.pure_reality import BattleFieldDTO
+from rpgram.presentation.queue.models import from_stream_player_converter
 
 battle_router = APIRouter(prefix="/battle")
 
@@ -80,6 +85,19 @@ async def connect_to_battle(
     return battle_service.connect(player_id, battle_id, streamer)
 
 
+@battle_router.post("/instant")
+@inject
+async def start_by_micro(
+    player: models.PlayerDTO,
+    opponent: models.PlayerDTO,
+    interactor: FromDishka[StartBattleMicroservices],
+):
+    battle = interactor.execute(
+        from_stream_player_converter(player), from_stream_player_converter(opponent)
+    )
+    return battle.battle_id
+
+
 @battle_router.post("/{key}")
 @inject
 async def act_in_battle(
@@ -104,7 +122,6 @@ async def clients_battle(
     if dto.opponent is None:
         raise HTTPException(status.HTTP_202_ACCEPTED, "Not started yet")
     return dto
-
 
 
 @battle_router.get("/result")

@@ -4,6 +4,7 @@ from asyncio import sleep
 
 from rpgram.app.sse import Streamer
 from rpgram.data.battle import BattleRepository
+from rpgram.domain.apis import StatisticsGateway
 from rpgram.domain.models.battle import (
     Battle,
     World,
@@ -52,6 +53,7 @@ async def battle_loop_until_victory_or_timeout(
     world: World,
     streamer: Streamer,
     battle_repo: BattleRepository,
+    stats_gate: StatisticsGateway,
     npc: bool = False,
 ) -> None:
     # if battle_state.opponent is None:
@@ -76,7 +78,9 @@ async def battle_loop_until_victory_or_timeout(
                 is_hero=False,
                 win=not finish or time_is_over,
             )
-            result_event = BattleResult(hero_result, opponent_result)
+            result_event = BattleResult(
+                battle_state.battle_id, hero_result, opponent_result
+            )
             battle_repo.set_battle_result(battle_state.battle_id, hero_result)
             battle_repo.set_battle_result(battle_state.battle_id, opponent_result)
             battle_repo.remove_battle(battle_state.battle_id)
@@ -91,6 +95,7 @@ async def battle_loop_until_victory_or_timeout(
                 streamer.send_battle(battle_state.hero.player_id, result_event)
             if opponent_streaming:
                 streamer.send_battle(battle_state.opponent.player_id, result_event)
+            await stats_gate.battle_finished(result_event)
             return
         if battle_event is not None:
             if hero_streaming:

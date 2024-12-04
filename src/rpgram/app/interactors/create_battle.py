@@ -6,9 +6,17 @@ from rpgram.app.sse import Streamer
 from rpgram.data.battle import BattleRepository
 from rpgram.domain.algos.loop import battle_loop_until_victory_or_timeout
 from rpgram.domain.algos.trie import COMBO_ROOT
+from rpgram.domain.apis import StatisticsGateway
 from rpgram.domain.errors import NoBattle
-from rpgram.domain.models.battle import RunningBattle, PlayerState, HeroState, PlayInfo, CreateBattle, World, \
-    BattleStarted
+from rpgram.domain.models.battle import (
+    RunningBattle,
+    PlayerState,
+    HeroState,
+    PlayInfo,
+    CreateBattle,
+    World,
+    BattleStarted,
+)
 from rpgram.domain.utypes import PlayerId
 
 
@@ -30,17 +38,25 @@ def create_battle(player: StartBattlePlayerDTO, opponent: StartBattlePlayerDTO):
         PlayerState(
             HeroState(player.hero.health, []),
             PlayInfo(COMBO_ROOT, COMBO_ROOT),
-            player.player_id),
+            player.player_id,
+        ),
         PlayerState(
             HeroState(opponent.hero.health, []),
             PlayInfo(COMBO_ROOT, COMBO_ROOT),
-            opponent.player_id
-        )
+            opponent.player_id,
+        ),
     )
 
 
 class StartBattleMicroservices:
-    def __init__(self, battle_repo: BattleRepository, streamer: Streamer, world: World):
+    def __init__(
+        self,
+        battle_repo: BattleRepository,
+        streamer: Streamer,
+        world: World,
+        stats: StatisticsGateway,
+    ):
+        self.stats = stats
         self.world = world
         self.streamer = streamer
         self.battle_repo = battle_repo
@@ -54,7 +70,11 @@ class StartBattleMicroservices:
         if isinstance(running_battle, RunningBattle):
             asyncio.create_task(
                 battle_loop_until_victory_or_timeout(
-                    running_battle, self.world, self.streamer, self.battle_repo
+                    running_battle,
+                    self.world,
+                    self.streamer,
+                    self.battle_repo,
+                    self.stats,
                 )
             )
         battle_started = time.time()
