@@ -55,7 +55,7 @@ class BattleProvider(Provider):
 
     @provide
     async def aio_pika_con(self) -> StatisticsGateway:
-        con = await aio_pika.connect_robust()
+        con = await aio_pika.connect_robust("amqp://guest:guest@host.docker.internal:5672/")
         return RabbitGateway(con)
 
     @provide

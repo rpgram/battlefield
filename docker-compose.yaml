@@ -1,0 +1,14 @@
+version: "3.8"
+
+networks:
+  rpgram:
+    external: true
+
+services:
+  rpgram_battle:
+    build: .
+    container_name: rpgram_battle
+    networks:
+      - rpgram
+    ports:
+      - "8000:8000"

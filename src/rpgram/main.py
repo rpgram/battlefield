@@ -4,15 +4,15 @@ from typing import AsyncGenerator
 from dishka.plotter import render_d2
 from dishka import make_async_container
 from dishka.integrations.fastapi import setup_dishka as set_dish_api
-from dishka.integrations.faststream import setup_dishka as set_dish_stream
+# from dishka.integrations.faststream import setup_dishka as set_dish_stream
 from fastapi import FastAPI
-from faststream import FastStream
-from faststream.rabbit.fastapi import RabbitBroker
+# from faststream import FastStream
+# from faststream.rabbit.fastapi import RabbitBroker
 
 from rpgram.adapters import configure_logs
 from rpgram.app.config import config_factory
 from rpgram.app.ioc import BattleProvider, InteractorsProvider
-from rpgram.presentation.queue.battle import make_rabbit_router
+# from rpgram.presentation.queue.battle import make_rabbit_router
 from rpgram.presentation.routers.battle import battle_router
 from rpgram.presentation.routers.fakes import fake_router
 from rpgram.presentation.routers.players import players_router
@@ -32,13 +32,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 container = make_async_container(BattleProvider(), InteractorsProvider())
 
 
-def create_faststream() -> FastStream:
-    broker = RabbitBroker()
-    faststream_app = FastStream(broker)
-    router = make_rabbit_router(None)
-    set_dish_stream(container, faststream_app)
-    broker.include_router(router)
-    return faststream_app
+# def create_faststream() -> FastStream:
+#     broker = RabbitBroker()
+#     faststream_app = FastStream(broker)
+#     router = make_rabbit_router(None)
+#     set_dish_stream(container, faststream_app)
+#     broker.include_router(router)
+#     return faststream_app
 
 
 def create_fastapi_app() -> FastAPI:
