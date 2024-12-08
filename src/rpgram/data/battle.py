@@ -1,3 +1,5 @@
+import logging
+
 from rpgram.domain.errors import NoBattle
 from rpgram.domain.interfaces.memory_storage import IMemoryEntityStorage
 from rpgram.domain.models.battle import (
@@ -9,6 +11,9 @@ from rpgram.domain.models.battle import (
 )
 from rpgram.domain.utypes import BattleId, PlayerId
 from rpgram.presentation.models.battle import Side
+
+
+logger = logging.getLogger(__name__)
 
 
 class BattleStorage(IMemoryEntityStorage[BattleId]):
@@ -73,6 +78,7 @@ class BattleRepository:
     def get_battle(
         self, player_id: PlayerId | None = None, battle_id: BattleId | None = None
     ) -> Battle | RunningBattle | None:
+        logger.debug("Getting battle", extra={"storage": self._storage.players_battle})
         if battle_id:
             return self._storage.battles.get(battle_id)
         if player_id is None:
@@ -127,6 +133,7 @@ class BattleRepository:
         self._storage.players_keys[key] = player_id
 
     def get_player_id(self, key: str) -> PlayerId | None:
+        logging.debug("Storage query", extra={"storage": self._storage.players_keys})
         return self._storage.players_keys.get(key)
 
     # def get_opponents(self, battle_id: BattleId) -> tuple[PlayerId, PlayerId]:

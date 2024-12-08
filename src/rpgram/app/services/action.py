@@ -16,7 +16,8 @@ class ActionInteractor:
         self.battle_repo = battle_repo
         self.combo_root = combo_root
 
-    def __call__(self, key: str, user_key: str) -> None:
+    def execute(self, key: str, user_key: str) -> None:
+        logger.debug("key:[%s], type: %s", user_key, type(user_key))
         player_id = self.battle_repo.get_player_id(user_key)
         if player_id is None:
             raise NoBattle

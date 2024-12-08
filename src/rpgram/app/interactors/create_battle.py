@@ -20,6 +20,7 @@ from rpgram.domain.models.battle import (
     BattleKeysResponse,
 )
 from rpgram.domain.utypes import PlayerId
+from rpgram.presentation.models.battle import Side
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +69,7 @@ class StartBattleMicroservices:
     def execute(self, player: StartBattlePlayerDTO, opponent: StartBattlePlayerDTO):
         battle = create_battle(player, opponent)
         battle_id = self.battle_repo.add_battle(battle)
+        self.battle_repo.connect_side(opponent.player_id, Side.RIGHT, battle_id)
         running_battle = self.battle_repo.get_battle(battle_id=battle_id)
         if running_battle is None:
             raise NoBattle(battle_id)
@@ -81,6 +83,7 @@ class StartBattleMicroservices:
                     self.stats,
                 )
             )
+            logger.info("Battle running %s", running_battle.battle_id, extra={"scope":"battle"})
         battle_started = time.time()
         battle_started += self.world.battle_preparation
 

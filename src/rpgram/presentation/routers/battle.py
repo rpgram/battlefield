@@ -1,3 +1,4 @@
+import logging
 import time
 from dataclasses import asdict
 from typing import AsyncGenerator, Any
@@ -32,6 +33,9 @@ from rpgram.presentation.models.converter import (
 )
 from rpgram.presentation.models.pure_reality import BattleFieldDTO
 from rpgram.presentation.queue.models import from_stream_player_converter
+
+
+logger = logging.getLogger(__name__)
 
 battle_router = APIRouter(prefix="/battle")
 
@@ -92,10 +96,9 @@ async def start_by_micro(
     opponent: models.PlayerDTO,
     interactor: FromDishka[StartBattleMicroservices],
 ):
-    battle = interactor.execute(
+    return interactor.execute(
         from_stream_player_converter(player), from_stream_player_converter(opponent)
     )
-    return battle.battle_id
 
 
 @battle_router.post("/{key}")
@@ -103,9 +106,9 @@ async def start_by_micro(
 async def act_in_battle(
     key: str, user_key: str, action_interactor: FromDishka[ActionInteractor]
 ) -> None:
-    # todo return response
     try:
-        action_interactor(key, user_key)
+        logger.debug("In try...")
+        action_interactor.execute(key, user_key)
     except NoBattle:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "No battle.")
 
