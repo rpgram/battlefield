@@ -17,7 +17,7 @@ from rpgram.domain.utypes import PlayerId
 class InMemoryPlayers(IMemoryEntityStorage[PlayerId], IPlayerStorage):
 
     @property
-    def generate_id(self) -> PlayerId:
+    def generated_id(self) -> PlayerId:
         return PlayerId(0)
 
     @abc.abstractmethod
@@ -43,7 +43,7 @@ class PlayerStorage(InMemoryPlayers):
         self._id = PlayerId(self._id + 1)
 
     @property
-    def generate_id(self) -> PlayerId:
+    def generated_id(self) -> PlayerId:
         self._next_id()
         return self._id
 
@@ -56,7 +56,7 @@ class FakeStorage(InMemoryPlayers):
         ]
 
     @property
-    def generate_id(self) -> PlayerId:
+    def generated_id(self) -> PlayerId:
         raise NotImplemented
 
     def _next_id(self) -> None:
@@ -72,7 +72,7 @@ class PlayerRepo:
         self._storage = storage
 
     def add_player(self, username: str, hero: Hero) -> PlayerId:
-        _id = self._storage.generate_id
+        _id = self._storage.generated_id
         player = Player(_id, username, hero)
         self._storage.players[_id] = player
         return _id

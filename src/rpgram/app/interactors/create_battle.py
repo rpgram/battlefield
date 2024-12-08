@@ -1,7 +1,9 @@
 import asyncio
 import dataclasses
+import logging
 import time
 
+from rpgram.app.services.auth import secure_string_generator
 from rpgram.app.sse import Streamer
 from rpgram.data.battle import BattleRepository
 from rpgram.domain.algos.loop import battle_loop_until_victory_or_timeout
@@ -15,9 +17,11 @@ from rpgram.domain.models.battle import (
     PlayInfo,
     CreateBattle,
     World,
-    BattleStarted,
+    BattleKeysResponse,
 )
 from rpgram.domain.utypes import PlayerId
+
+logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass
@@ -79,4 +83,15 @@ class StartBattleMicroservices:
             )
         battle_started = time.time()
         battle_started += self.world.battle_preparation
-        return BattleStarted(int(battle_started), battle_id)
+
+        def insert_key(player_id: PlayerId) -> str:
+            key = secure_string_generator()
+            while self.battle_repo.get_player_id(key):
+                key = secure_string_generator()
+            self.battle_repo.update_keys(player_id, key)
+            return key
+
+        pk = insert_key(player.player_id)
+        ok = insert_key(opponent.player_id)
+        logger.info("Battle %s started", battle_id, extra={"scope": "battle"})
+        return BattleKeysResponse(battle_id, pk, ok)

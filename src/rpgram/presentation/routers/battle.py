@@ -101,11 +101,11 @@ async def start_by_micro(
 @battle_router.post("/{key}")
 @inject
 async def act_in_battle(
-    key: str, player_id: PlayerId, action_interactor: FromDishka[ActionInteractor]
+    key: str, user_key: str, action_interactor: FromDishka[ActionInteractor]
 ) -> None:
     # todo return response
     try:
-        action_interactor(key, player_id)
+        action_interactor(key, user_key)
     except NoBattle:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "No battle.")
 

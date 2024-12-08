@@ -1,7 +1,11 @@
+import logging
+
 from rpgram.data.battle import BattleRepository
 from rpgram.domain.errors import NoBattle
 from rpgram.domain.models.battle import World, ComboNode, RunningBattle
-from rpgram.domain.utypes import PlayerId
+
+
+logger = logging.getLogger(__name__)
 
 
 class ActionInteractor:
@@ -12,7 +16,10 @@ class ActionInteractor:
         self.battle_repo = battle_repo
         self.combo_root = combo_root
 
-    def __call__(self, key: str, player_id: PlayerId) -> None:
+    def __call__(self, key: str, user_key: str) -> None:
+        player_id = self.battle_repo.get_player_id(user_key)
+        if player_id is None:
+            raise NoBattle
         battle = self.battle_repo.get_battle(player_id)
         if not isinstance(battle, RunningBattle):
             raise NoBattle(player_id=player_id)
@@ -38,3 +45,6 @@ class ActionInteractor:
             battle.hero.plays.previous = previous_combo
         else:
             battle.opponent.plays.previous = previous_combo
+        logger.info(
+            "Processed key %s from %s", key, player_id, extra={"scope": "battle"}
+        )

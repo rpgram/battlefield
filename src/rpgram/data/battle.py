@@ -20,13 +20,14 @@ class BattleStorage(IMemoryEntityStorage[BattleId]):
         self.battle_results: dict[BattleId, tuple[tuple[PlayerId, bool, bool], ...]] = (
             {}
         )
+        self.players_keys: dict[str, PlayerId] = {}
         self._reset_id()
 
     def _reset_id(self) -> None:
         self._battle_id_counter = BattleId(0)
 
     @property
-    def generate_id(self) -> BattleId:
+    def generated_id(self) -> BattleId:
         self._next_id()
         return self._battle_id_counter
 
@@ -47,7 +48,7 @@ class BattleRepository:
         self._storage.battles[battle.battle_id] = battle
 
     def add_battle(self, battle: CreateBattle) -> BattleId:
-        battle_id = self._storage.generate_id
+        battle_id = self._storage.generated_id
         if battle.opponent is None:
             to_insert = Battle(hero=battle.hero, opponent=None, battle_id=battle_id)
         else:
@@ -121,6 +122,12 @@ class BattleRepository:
         if hero_result and opponent_result:
             return BattleResult(battle_id, hero_result, opponent_result)
         return None
+
+    def update_keys(self, player_id: PlayerId, key: str):
+        self._storage.players_keys[key] = player_id
+
+    def get_player_id(self, key: str) -> PlayerId | None:
+        return self._storage.players_keys.get(key)
 
     # def get_opponents(self, battle_id: BattleId) -> tuple[PlayerId, PlayerId]:
     #     pb = self._storage.players_battle

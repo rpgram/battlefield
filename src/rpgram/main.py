@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from faststream import FastStream
 from faststream.rabbit.fastapi import RabbitBroker
 
+from rpgram.adapters import configure_logs
 from rpgram.app.config import config_factory
 from rpgram.app.ioc import BattleProvider, InteractorsProvider
 from rpgram.presentation.queue.battle import make_rabbit_router
@@ -19,6 +20,7 @@ from rpgram.presentation.routers.players import players_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    configure_logs()
     # fas = create_faststream()
     # assert fas.broker
     # await fas.broker.start()

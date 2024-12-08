@@ -158,4 +158,11 @@ class BattleResult:
     #  todo here is award also
 
 
+@dataclass(kw_only=False)
+class BattleKeysResponse:
+    battle_id: BattleId
+    player_key: str
+    opponent_key: str
+
+
 SSEEvent = RunningBattle | BattleResult | Battle
